@@ -1,0 +1,22 @@
+# Python environment and compiled files
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build artifacts for IoT nodes
+IoT_Nodes/**/build/
+IoT_Nodes/**/build/**/obj/
+IoT_Nodes/**/build/**/.deps/
+IoT_Nodes/**/build/**/*.o
+IoT_Nodes/**/build/**/*.native
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Editor and OS files
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
