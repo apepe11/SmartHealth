@@ -60,7 +60,6 @@ build/native/obj/platform.o: \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-packetqueue.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/assert.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/csprng.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/aes-128.h \
@@ -126,7 +125,6 @@ build/native/obj/platform.o: \
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-packetqueue.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/assert.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/csprng.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/aes-128.h:

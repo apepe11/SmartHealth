@@ -39,6 +39,9 @@ PROCESS_THREAD(smart_health_node, ev, data) {
         if(ev == PROCESS_EVENT_TIMER && data == &periodic_timer) {
             LOG_INFO("Campionamento dati in corso... (Rate: %d sec)\n", current_sampling_rate);
             
+            // 🔴 CORREZIONE: Notifica a CoAP che i dati di /vitals sono aggiornati!
+            coap_notify_observers(&res_vitals);
+            
             // Re-imposta il timer usando l'intervallo aggiornato
             etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
         }

@@ -50,7 +50,6 @@ build/cooja/obj/uip-ds6.o: \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
  /home/antoniio/Scrivania/contiki-ng/os/sys/log.h \
  /home/antoniio/Scrivania/contiki-ng/os/sys/log-conf.h
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/module-macros.h:
@@ -103,6 +102,5 @@ build/cooja/obj/uip-ds6.o: \
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
 /home/antoniio/Scrivania/contiki-ng/os/sys/log.h:
 /home/antoniio/Scrivania/contiki-ng/os/sys/log-conf.h:

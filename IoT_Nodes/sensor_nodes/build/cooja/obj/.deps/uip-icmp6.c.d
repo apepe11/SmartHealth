@@ -49,7 +49,6 @@ build/cooja/obj/uip-icmp6.o: \
  /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h \
  /home/antoniio/Scrivania/contiki-ng/os/contiki-default-conf.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h \
@@ -105,7 +104,6 @@ build/cooja/obj/uip-icmp6.o: \
 /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h:
 /home/antoniio/Scrivania/contiki-ng/os/contiki-default-conf.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h:

@@ -29,15 +29,6 @@ build/cooja/obj/uip-sr.o: \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipbuf.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/linkaddr.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/tcpip.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-route.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/smrf.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/esmrf.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/roll-tm.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-stats.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uiplib.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-nbr.h \
@@ -84,15 +75,6 @@ build/cooja/obj/uip-sr.o: \
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipbuf.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/linkaddr.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/tcpip.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-route.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/smrf.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/esmrf.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/roll-tm.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-stats.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uiplib.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-nbr.h:

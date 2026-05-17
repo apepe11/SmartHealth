@@ -50,7 +50,6 @@ build/cooja/obj/sicslowpan.o: \
  /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/sicslowpan.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/mac/framer/frame802154.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/packetbuf.h \
@@ -112,7 +111,6 @@ build/cooja/obj/sicslowpan.o: \
 /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/sicslowpan.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/mac/framer/frame802154.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/packetbuf.h:

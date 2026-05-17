@@ -1,6 +1,7 @@
 build/cooja/obj/rpl.o: \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl.c \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl.c \
  /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/module-macros.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipopt.h \
  /home/antoniio/Scrivania/contiki-ng/os/contiki.h \
@@ -28,6 +29,11 @@ build/cooja/obj/rpl.o: \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipbuf.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/linkaddr.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/tcpip.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-const.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-conf.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-types.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-icmp6.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h \
@@ -49,16 +55,19 @@ build/cooja/obj/rpl.o: \
  /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-nbr.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-dag.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-dag-root.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-neighbor.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-ext-header.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-timers.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-private.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-dag-root.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h \
  /home/antoniio/Scrivania/contiki-ng/os/sys/log.h \
  /home/antoniio/Scrivania/contiki-ng/os/sys/log-conf.h
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/module-macros.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipopt.h:
 /home/antoniio/Scrivania/contiki-ng/os/contiki.h:
@@ -86,6 +95,11 @@ build/cooja/obj/rpl.o: \
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uipbuf.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/linkaddr.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/tcpip.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-const.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-conf.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-types.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-icmp6.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h:
@@ -107,12 +121,14 @@ build/cooja/obj/rpl.o: \
 /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-nbr.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-dag.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-dag-root.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-neighbor.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-ext-header.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-lite/rpl-timers.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/routing/routing.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-private.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-dag-root.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h:
 /home/antoniio/Scrivania/contiki-ng/os/sys/log.h:
 /home/antoniio/Scrivania/contiki-ng/os/sys/log-conf.h:

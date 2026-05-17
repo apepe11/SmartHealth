@@ -52,7 +52,9 @@ build/cooja/obj/tcp-socket.o: \
  /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h \
+ /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-route.h \
@@ -61,9 +63,6 @@ build/cooja/obj/tcp-socket.o: \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/roll-tm.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-stats.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/psock.h \
  /home/antoniio/Scrivania/contiki-ng/os/contiki-lib.h \
  /home/antoniio/Scrivania/contiki-ng/os/lib/list.h \
@@ -126,7 +125,9 @@ build/cooja/obj/tcp-socket.o: \
 /home/antoniio/Scrivania/contiki-ng/os/sys/ctimer.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6-route.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/routing/rpl-classic/rpl-conf.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h:
+/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-engines.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-route.h:
@@ -135,9 +136,6 @@ build/cooja/obj/tcp-socket.o: \
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/roll-tm.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/uip-mcast6-stats.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/multicast/mpl.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-sr.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-icmp6.h:
-/home/antoniio/Scrivania/contiki-ng/os/net/ipv6/uip-ds6.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/ipv6/psock.h:
 /home/antoniio/Scrivania/contiki-ng/os/contiki-lib.h:
 /home/antoniio/Scrivania/contiki-ng/os/lib/list.h:

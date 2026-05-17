@@ -8,7 +8,7 @@ PROJECT_SOURCEFILES += res_vitals.c res_sampling.c
 # 3. Configurazione dello stack di rete IPv6 e Routing RPL per Contiki-NG
 MAKE_MAC = MAKE_MAC_CSMA
 MAKE_NET = MAKE_NET_IPV6
-MAKE_ROUTING = MAKE_ROUTING_RPL_CLASSIC
+MAKE_ROUTING = MAKE_ROUTING_RPL_LITE
 
 # 4. Inclusione obbligatoria del modulo CoAP (Erbium) nativo di Contiki-NG
 MODULES += os/net/app-layer/coap
