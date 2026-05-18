@@ -56,11 +56,12 @@ class SmartHealthApp:
             sensor_key = sensor_map.get(sensor_id)
             if sensor_key and sensor_key in self.sensor_cards:
                 hr = record.get("heart_rate", 0)
+                body_temp = record.get("body_temperature", 0)
                 spo2 = record.get("spo2", 0)
                 risk = record.get("risk_score", 0.0)
                 
                 # Aggiorna la card specifica
-                self.sensor_cards[sensor_key].update_data(hr, spo2, risk)
+                self.sensor_cards[sensor_key].update_data(hr, body_temp, spo2, risk)
                 
         # Pianifica la prossima esecuzione tra 2000 millisecondi (2 secondi)
         self.root.after(2000, self.refresh_data)

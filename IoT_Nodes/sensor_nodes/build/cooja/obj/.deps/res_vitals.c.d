@@ -38,7 +38,8 @@ build/cooja/obj/res_vitals.o: res_vitals.c \
  /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-engine.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-observe.h \
  /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-separate.h \
- /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-observe-client.h
+ /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-observe-client.h \
+ vitals_classifier.h
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/module-macros.h:
 /home/antoniio/Scrivania/contiki-ng/os/contiki.h:
 /home/antoniio/Scrivania/contiki-ng/arch/platform/cooja/./contiki-conf.h:
@@ -79,3 +80,4 @@ build/cooja/obj/res_vitals.o: res_vitals.c \
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-observe.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-separate.h:
 /home/antoniio/Scrivania/contiki-ng/os/net/app-layer/coap/coap-observe-client.h:
+vitals_classifier.h:

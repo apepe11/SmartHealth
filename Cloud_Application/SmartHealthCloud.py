@@ -78,6 +78,7 @@ def handle_incoming_data(payload_text, sensor_name):
         payload_text = re.sub(r'(?<=\d),(?=\d)', '.', payload_text)
         data = json.loads(payload_text)
         hr = int(data.get('hr', 0))
+        body_temperature = int(data.get('body_temperature', 0))
         spo2 = int(data.get('spo2', 0))
         risk_score = float(data.get('risk', 0.0))
         sensor_map = {
@@ -86,13 +87,13 @@ def handle_incoming_data(payload_text, sensor_name):
         }
         sensor_id = sensor_map.get(sensor_name, 0)
         
-        query = "INSERT INTO Health_Measurements (sensor_id, heart_rate, spo2, risk_score) VALUES (%s, %s, %s, %s)"
-        success = db.query(query, (sensor_id, hr, spo2, risk_score))
+        query = "INSERT INTO Health_Measurements (sensor_id, heart_rate, body_temperature, spo2, risk_score) VALUES (%s, %s, %s, %s, %s)"
+        success = db.query(query, (sensor_id, hr, body_temperature, spo2, risk_score))
         
         if success:
-            print(f"[✓] Dati salvati! (Sensore: {sensor_name} | HR: {hr}, SpO2: {spo2}, Risk: {risk_score})")
+            print(f"[✓] Dati salvati! (Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Risk: {risk_score})")
             
-        if risk_score >= 0.50:
+        if int(risk_score) == 2:
             asyncio.create_task(trigger_alarm(sensor_name))
             
     except Exception as e:

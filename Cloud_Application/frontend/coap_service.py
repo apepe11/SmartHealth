@@ -16,7 +16,8 @@ class DataService:
         
         # Questa query prende l'ultimo record inserito per ogni sensore
         query = """
-            SELECT m1.* FROM Health_Measurements m1
+            SELECT m1.sensor_id, m1.heart_rate, m1.body_temperature, m1.spo2, m1.risk_score, m1.timestamp
+            FROM Health_Measurements m1
             INNER JOIN (
                 SELECT sensor_id, MAX(timestamp) as max_ts
                 FROM Health_Measurements
@@ -40,7 +41,7 @@ class DataService:
         cursor = connection.cursor(dictionary=True)
         
         query = """
-            SELECT heart_rate, spo2, risk_score, timestamp 
+            SELECT heart_rate, body_temperature, spo2, risk_score, timestamp 
             FROM Health_Measurements 
             WHERE sensor_id = %s 
             ORDER BY timestamp DESC 

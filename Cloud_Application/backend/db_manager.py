@@ -25,7 +25,7 @@ class DBManager:
             return []
         try:
             cursor = self.connection.cursor(buffered=True)
-            query = "SELECT sensor_id, heart_rate, spo2, risk_score, timestamp FROM Health_Measurements ORDER BY timestamp DESC LIMIT %s"
+            query = "SELECT sensor_id, heart_rate, body_temperature, spo2, risk_score, timestamp FROM Health_Measurements ORDER BY timestamp DESC LIMIT %s"
             cursor.execute(query, (limit,))
             results = cursor.fetchall()
             cursor.close()
