@@ -7,5 +7,11 @@ DB_CONFIG = {
     "database": "SmartHealthIoT"
 }
 
-# Nomi dei sensori così come sono censiti nel Database
-SENSORS = ["Sensore_1", "Sensore_2"]
+
+SENSORS_CONFIG = {
+    "Sensore_1": {
+        "id": 1,
+        "sensor_ip": "fd00::f6ce:36b9:a760:ecea",  # IP reale del Dongle Fisico (Corretto ✓)
+        "actuator_ip": "fd00::202:2:2:2"          # MODIFICATO: IP globale dell'attuatore in Cooja
+    }
+}

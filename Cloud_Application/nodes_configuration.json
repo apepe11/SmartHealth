@@ -3,16 +3,9 @@
         {
             "id": 1,
             "patient_name": "Mario Rossi",
-            "ip_address": "fd00::201:1:1:1",
-            "port": 5683,
-            "sampling_rate": 5
-        },
-        {
-            "id": 2,
-            "patient_name": "Luigi Verdi",
             "ip_address": "fd00::202:2:2:2",
             "port": 5683,
-            "sampling_rate": 10
+            "sampling_rate": 5
         }
     ],
     "actuators": [

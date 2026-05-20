@@ -91,13 +91,13 @@ python SmartHealthCloud.py
 ```
 
 Questo avvia:
-- Polling periodico dei sensori via CoAP (`fd00::202:2:2:2` e `fd00::203:3:3:3`)
+- Polling periodico del sensore via CoAP (`fd00::202:2:2:2`)
 - Salvataggio dati in MySQL ogni 5 secondi
 - Logica di allarme quando rischio ≥ 0.50
 
 **Output atteso**:
 ```
-Avvio Smart Health Cloud Application (Multi-Node Polling)...
+Avvio Smart Health Cloud Application (Polling Sensore)...
 In ascolto tramite Polling periodico... (Premi Ctrl+C per uscire)
 [DATO DAL SENSORE Sensore_1]: {...}
 [✓] Dati salvati! (Sensore: Sensore_1 | HR: 75, SpO2: 98, Risk: 0.15)
@@ -112,7 +112,7 @@ python SmartHealthUI.py
 ```
 
 Questo avvia:
-- Dashboard Tkinter con 2 card (Sensore 1 e 2)
+- Dashboard Tkinter con card paziente
 - Aggiornamento dati in tempo reale (ogni 2 secondi)
 - Indicatore visivo di stato (💚 stabile / ⚠️ emergenza)
 
@@ -144,9 +144,8 @@ DB_CONFIG = {
 Modifica gli IP dei sensori in `Cloud_Application/SmartHealthCloud.py`:
 
 ```python
-SENSOR_1_IP = "fd00::202:2:2:2"   # Nodo sensore 2
-SENSOR_2_IP = "fd00::203:3:3:3"   # Nodo sensore 3
-ACTUATOR_IP = "fd00::204:4:4:4"   # Nodo attuatore
+SENSOR_1_IP = "fd00::202:2:2:2"   # Nodo sensore
+ACTUATOR_IP = "fd00::203:3:3:3"   # Nodo attuatore
 ```
 
 ## 🔧 Troubleshooting

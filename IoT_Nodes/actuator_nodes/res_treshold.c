@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include "contiki.h"
 #include "coap-engine.h"
+#include "os/dev/leds.h" // Aggiunto controllo hardware LED
 
-// Variabile globale definita nel main dell'attuatore
-extern float alarm_threshold; 
+extern int alarm_threshold; 
 
 static void threshold_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 static void threshold_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
@@ -21,8 +21,7 @@ static void threshold_get_handler(coap_message_t *request, coap_message_t *respo
     int length;
     char payload[60];
     
-    // Converte la soglia (es. 0.85) in intero percentuale (es. 85) per semplicità
-    snprintf(payload, sizeof(payload), "{\"threshold\": %d}", (int)(alarm_threshold * 100));
+    snprintf(payload, sizeof(payload), "{\"threshold\": %d}", alarm_threshold);
     length = strlen(payload);
         
     coap_set_header_content_format(response, APPLICATION_JSON);
@@ -39,14 +38,25 @@ static void threshold_put_handler(coap_message_t *request, coap_message_t *respo
         memcpy(temp, payload, len);
         temp[len] = '\0';
         
-        // Estrazione del valore JSON {"new_t": "85"}
         char *ptr = strstr(temp, "\"new_t\":");
         if(ptr != NULL) {
-            // Estrae il numero saltando i caratteri extra
             if(sscanf(ptr, "\"new_t\": \"%d\"", &new_t_int) == 1 || sscanf(ptr, "\"new_t\": %d", &new_t_int) == 1) {
-                if(new_t_int >= 0 && new_t_int <= 100) {
-                    alarm_threshold = (float)new_t_int / 100.0;
-                    printf("[Attuatore] Nuova soglia impostata: %.2f\n", alarm_threshold);
+                if(new_t_int >= 0 && new_t_int <= 2) {
+                    alarm_threshold = new_t_int;
+                    printf("[Attuatore] Nuova soglia ricevuta dal Python: %d\n", alarm_threshold);
+                    
+                    // --- LA SOLUZIONE: CONTROLLO DIRETTO DEI LED ---
+                    if(alarm_threshold == 2) {
+                        leds_on(LEDS_RED);
+                        leds_off(LEDS_GREEN);
+                        printf("[Attuatore] ALLARME MASSIMO! LED Rosso Acceso.\n");
+                    } else {
+                        leds_off(LEDS_RED);
+                        leds_on(LEDS_GREEN);
+                        printf("[Attuatore] Rischio rientrato. LED Verde.\n");
+                    }
+                    // -----------------------------------------------
+
                     coap_set_status_code(response, CHANGED_2_04);
                     return;
                 }

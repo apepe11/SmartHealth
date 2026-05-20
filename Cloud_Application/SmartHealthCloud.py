@@ -5,14 +5,14 @@ import mysql.connector
 from aiocoap import *
 
 # ==========================================
-# 1. CLASSE MYSQL (La tua struttura originale)
+# 1. CLASSE MYSQL (CORRETTA)
 # ==========================================
 class MySQL:
     def __init__(self):
         self.host = "localhost"
         self.user = "root"          
-        self.password = "1"  # La tua password
-        self.database = "SmartHealthIoT"  # Il tuo Database
+        self.password = "1"  
+        self.database = "SmartHealthIoT"  
         
         self.connection = mysql.connector.connect(
             host=self.host, user=self.user, password=self.password, database=self.database 
@@ -35,11 +35,13 @@ class MySQL:
         self.connection.close()
 
 # ==========================================
-# 2. INDIRIZZI IP DELLA RETE COOJA
+# 2. INDIRIZZI IP DELLA RETE MISTA (HARDWARE + COOJA)
 # ==========================================
-SENSOR_1_IP = "fd00::202:2:2:2"   # Nodo 2
-SENSOR_2_IP = "fd00::203:3:3:3"   # Nodo 3
-ACTUATOR_IP = "fd00::204:4:4:4"   # Nodo 4
+
+SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"   
+# Questo va bene per l'attuatore dentro Cooja
+# CORRETTO: Usiamo l'indirizzo globale instradato tramite l'interfaccia tun0 di tunslip6
+ACTUATOR_IP = "fd00::202:2:2:2"
 
 db = MySQL()
 
@@ -48,22 +50,20 @@ db = MySQL()
 # ==========================================
 async def trigger_alarm(sensor_name):
     """Abbassa la soglia dell'attuatore tramite PUT per forzare l'attivazione dell'allarme"""
-    print(f"⚠️ EMERGENZA RILEVATA SU {sensor_name}! Modifico la soglia dell'attuatore {ACTUATOR_IP}...")
+    print(f"⚠️ EMERGENZA RILEVATA SU {sensor_name}! Modifico la soglia dell'attuatore {ACTUATOR_IP} alla classe di rischio massima...")
     try:
         context = await Context.create_client_context()
         
-        # 1. Prepariamo il payload JSON che l'attuatore si aspetta: impostiamo la soglia a 0 (allarme immediato)
+        # Inviamo la soglia d'allarme come intero (Classe 0, 1 o 2). Impostando 0 scatta per qualsiasi anomalia.
         payload_data = {"new_t": 0}
         payload_bytes = json.dumps(payload_data).encode('utf-8')
         
-        # 2. Cambiamo il codice in PUT e l'URI sulla risorsa corretta "/threshold"
         request = Message(
             code=PUT, 
             payload=payload_bytes, 
-            uri=f"coap://[{ACTUATOR_IP}]/threshold"
+            uri=f"coap://[{ACTUATOR_IP}]:5683/threshold"
         )
-        # Specifichiamo che stiamo inviando un JSON
-        request.opt.content_format = 50 
+        request.opt.content_format = 50 # APPLICATION_JSON
         
         response = await context.request(request).response
         print(f"[✓] Soglia aggiornata sull'attuatore! (Risposta CoAP: {response.code})")
@@ -74,78 +74,89 @@ async def trigger_alarm(sensor_name):
 def handle_incoming_data(payload_text, sensor_name):
     """Esegue il parsing dei dati e il salvataggio sul Database MySQL"""
     try:
-        # Alcuni nodi inviano il valore di rischio con la virgola decimale: 0,15
-        payload_text = re.sub(r'(?<=\d),(?=\d)', '.', payload_text)
         data = json.loads(payload_text)
         hr = int(data.get('hr', 0))
         body_temperature = int(data.get('body_temperature', 0))
         spo2 = int(data.get('spo2', 0))
-        risk_score = float(data.get('risk', 0.0))
-        sensor_map = {
-            'Sensore_1': 1,
-            'Sensore_2': 2
-        }
+        
+        # 🔴 CORREZIONE: Il rischio ora è un intero (Classe 0, 1, 2) generato dal TinyML
+        risk_score = int(data.get('risk', 0))
+        
+        sensor_map = {'Sensore_1': 1}
         sensor_id = sensor_map.get(sensor_name, 0)
         
         query = "INSERT INTO Health_Measurements (sensor_id, heart_rate, body_temperature, spo2, risk_score) VALUES (%s, %s, %s, %s, %s)"
         success = db.query(query, (sensor_id, hr, body_temperature, spo2, risk_score))
         
         if success:
-            print(f"[✓] Dati salvati! (Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Risk: {risk_score})")
+            print(f"[✓] Dati salvati nel DB! (Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Classe Rischio: {risk_score})")
             
-        if int(risk_score) == 2:
+        # Se il modello TinyML a bordo del sensore restituisce la classe 2 (Emergenza), allertiamo l'attuatore
+        if risk_score == 2:
             asyncio.create_task(trigger_alarm(sensor_name))
             
     except Exception as e:
         print(f"[❌ ERRORE PARSING] Errore nei dati da {sensor_name}: {e}")
 
-async def poll_sensor(sensor_ip, sensor_name):
-    """Interroga periodicamente il sensore tramite richieste GET (Polling)"""
-    print(f"Avviato monitoraggio periodico per {sensor_name} ({sensor_ip})...")
+# ==========================================
+# 🔴 FUNZIONE: OSSERVAZIONE ASINCRONA (CORRETTA)
+# ==========================================
+async def observe_sensor(sensor_ip, sensor_name):
+    """Si iscrive alla risorsa /vitals del sensore sfruttando il pattern Observe di CoAP"""
     
+    # Il ciclo while True mantiene in vita l'app anche se il sensore si disconnette! (Fault Tolerance)
     while True:
+        print(f"Avvio/Ripristino sottoscrizione OBSERVE per {sensor_name} ({sensor_ip})...")
+        
         try:
             context = await Context.create_client_context()
-            # Richiesta GET standard alla risorsa /vitals
-            request = Message(code=GET, uri=f"coap://[{sensor_ip}]/vitals")
             
-            # Invio della richiesta con un timeout massimo di 3 secondi per evitare blocchi pendenti
-            response = await asyncio.wait_for(context.request(request).response, timeout=3.0)
+            # Creiamo una richiesta GET con l'opzione observe abilitata
+            request = Message(code=GET, uri=f"coap://[{sensor_ip}]/vitals", observe=0)
             
-            payload_text = response.payload.decode('utf-8')
-            print(f"\n[DATO DAL SENSORE {sensor_name}]: {payload_text}")
+            protocol_request = context.request(request)
+            
+            # 1. 🔴 CORREZIONE: Dobbiamo attendere esplicitamente la PRIMA risposta!
+            first_response = await protocol_request.response
+            payload_text = first_response.payload.decode('utf-8')
+            print(f"\n[PRIMA RISPOSTA COAP DA {sensor_name}]: {payload_text}")
             handle_incoming_data(payload_text, sensor_name)
+            
+            # 2. Ora che l'Observe è confermato, restiamo in ascolto dei pacchetti futuri
+            async for response in protocol_request.observation:
+                payload_text = response.payload.decode('utf-8')
+                print(f"\n[NOTIFICA COAP DA {sensor_name}]: {payload_text}")
+                handle_incoming_data(payload_text, sensor_name)
                 
-        except asyncio.TimeoutError:
-            print(f"[⚠️ TIMEOUT] Nessuna risposta da {sensor_name} ({sensor_ip}) - Controlla Cooja o il tunnel tunslip6.")
         except asyncio.CancelledError:
-            print(f"Monitoraggio interrotto per {sensor_name}.")
+            print(f"\nMonitoraggio Observe interrotto volontariamente per {sensor_name}.")
             break
         except Exception as e:
-            print(f"[❌ ERRORE CONNESSIOINE] Errore temporaneo con {sensor_name}: {e}")
-        
-        # Aspetta 5 secondi prima di effettuare la prossima richiesta (Frequenza di campionamento)
+            # Se l'IP non è raggiungibile o il nodo è spento, catturiamo l'errore qui
+            print(f"\n[❌ ERRORE DI RETE] Impossibile raggiungere {sensor_name}: {e}")
+            
+        # 3. 🔴 MECCANISMO DI RECOVERY: Aspetta 5 secondi e poi ritenta!
+        print("--- Ritento la connessione tra 5 secondi... ---")
         await asyncio.sleep(5)
 
+
 # ==========================================
-# 4. MAIN LOOP ASINCRONO (POLLING IN PARALLELO)
+# 4. MAIN LOOP ASINCRONO (SOTTOCCRIZIONE)
 # ==========================================
 async def main():
-    print("Avvio Smart Health Cloud Application (Multi-Node Polling)...")
-    print("Sviluppato nativamente per Python 3.14 + aiocoap")
-    print("In ascolto tramite Polling periodico... (Premi Ctrl+C per uscire)\n")
+    print("Avvio Smart Health Cloud Application (CoAP Observe Mode)...")
+    print("Sviluppato in conformità con i requisiti del corso IoT 2026")
+    print("In ascolto asincrono delle notifiche dei sensori... (Premi Ctrl+C per uscire)\n")
     
-    # Avviamo i due cicli di interrogazione concorrenti in parallelo
-    task_s1 = asyncio.create_task(poll_sensor(SENSOR_1_IP, "Sensore_1"))
-    task_s2 = asyncio.create_task(poll_sensor(SENSOR_2_IP, "Sensore_2"))
+    # Avviamo il task di osservazione (Il cloud non fa richieste continue, aspetta le notifiche)
+    task_s1 = asyncio.create_task(observe_sensor(SENSOR_1_IP, "Sensore_1"))
     
     try:
-        await asyncio.gather(task_s1, task_s2)
+        await asyncio.gather(task_s1)
     except (KeyboardInterrupt, asyncio.CancelledError):
         print("\nChiusura dell'applicazione...")
         task_s1.cancel()
-        task_s2.cancel()
-        await asyncio.gather(task_s1, task_s2, return_exceptions=True)
+        await asyncio.gather(task_s1, return_exceptions=True)
 
 if __name__ == '__main__':
     try:
