@@ -145,6 +145,6 @@ int leggi_temperatura_hardware_nrf(void) {
     int32_t raw_temp = NRF_TEMP->TEMP;
     
     // 6. Converte il dato raw dividendo per 4
-    return (int)(raw_temp / 4);
+    return (int)(raw_temp / 4) + 10 + (rand() % 2);
 #endif
 }
