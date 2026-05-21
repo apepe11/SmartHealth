@@ -62,7 +62,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             // 1. GESTIONE TEMPERATURA: Hardware reale VS Cooja
             // =================================================================
             #if CONTIKI_TARGET_COOJA
-            current_temp = 36 + (rand() % 3); 
+            current_temp = 36 + (rand() % 5); 
             #else
             current_temp = leggi_temperatura_hardware_nrf();
             #endif
