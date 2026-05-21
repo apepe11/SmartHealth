@@ -22,10 +22,10 @@
 extern coap_resource_t res_vitals;
 extern coap_resource_t res_sampling;
 
-// --- ALLOCAZIONE REALE DI TUTTE LE VARIABILI GLOBALI ---
-int current_hr = 75;
-int current_spo2 = 98;
-int current_temp = 36;
+// --- VALORI INIZIALI REALISTICI PER LA PARTENZA ---
+int current_hr = 90;      // Parte da 90 bpm
+int current_spo2 = 98;    // Parte da 98%
+int current_temp = 34;    // Parte da 34 C
 int current_risk = 0;
 
 // Frequenza di default in secondi
@@ -45,7 +45,6 @@ PROCESS_THREAD(smart_health_node, ev, data) {
 
     LOG_INFO("Inizializzazione Nodo Smart Health con ML...\n");
     
-    // Attiva il motore CoAP (Ruolo SERVER)
     coap_activate_resource(&res_vitals, "vitals");
     coap_activate_resource(&res_sampling, "sampling");
     
@@ -59,25 +58,40 @@ PROCESS_THREAD(smart_health_node, ev, data) {
         if(ev == PROCESS_EVENT_TIMER && data == &periodic_timer) {
             
             // =================================================================
-            // 1. GESTIONE TEMPERATURA: Hardware reale VS Cooja
+            // 1. GESTIONE TEMPERATURA (Variazione dolce tra 36 e 40)
             // =================================================================
             #if CONTIKI_TARGET_COOJA
-            current_temp = 36 + (rand() % 5); 
+            // Genera una variazione di -1, 0, o +1 grado
+            int delta_temp = (rand() % 3) - 1; 
+            current_temp += delta_temp;
+            // Mantieni nei limiti 36-40
+            if(current_temp < 36) current_temp = 36;
+            if(current_temp > 40) current_temp = 40;
             #else
             current_temp = leggi_temperatura_hardware_nrf();
+            if(current_temp < 36) current_temp = 36;
+            if(current_temp > 40) current_temp = 40;
             #endif
 
             // =================================================================
-            // 2. GENERAZIONE CASUALE: Parametri non disponibili via hardware
+            // 2. GENERAZIONE CASUALE OMOGENEA: HR e SpO2
             // =================================================================
-            current_hr   = 60 + (rand() % 60);   // Range: 60 - 120 bpm
-            current_spo2 = 88 + (rand() % 13);   // Range: 88% - 101%
-            if(current_spo2 > 100) {
-                current_spo2 = 100;
-            }
+            // HR: variazione dolce tra -3 e +3 bpm ad ogni ciclo
+            int delta_hr = (rand() % 7) - 3; 
+            current_hr += delta_hr;
+            // Mantieni nei limiti 80-120
+            if(current_hr < 80) current_hr = 80;
+            if(current_hr > 120) current_hr = 120;
+
+            // SpO2: variazione dolce tra -1 e +1 % ad ogni ciclo
+            int delta_spo2 = (rand() % 3) - 1;
+            current_spo2 += delta_spo2;
+            // Mantieni nei limiti 88-100
+            if(current_spo2 < 88) current_spo2 = 88;
+            if(current_spo2 > 100) current_spo2 = 100;
 
             // =================================================================
-            // 3. INFERENZA MACHINE LEARNING (Random Forest di emlearn)
+            // 3. INFERENZA MACHINE LEARNING
             // =================================================================
             int16_t ml_features[3];
             ml_features[0] = (int16_t)current_hr;
@@ -99,7 +113,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
         }
         
-        // --- MECCANISMO ADATTIVO (STRESS TEST DA BOTTONE FISICO) ---
+        // --- MECCANISMO ADATTIVO ---
         if(ev == button_hal_press_event) {
             is_network_congested = !is_network_congested;
             
@@ -107,12 +121,10 @@ PROCESS_THREAD(smart_health_node, ev, data) {
                 LOG_INFO("STRESS TEST: Rete congestionata rilevata! Attivazione Meccanismo Adattivo...\n");
                 current_sampling_rate = 20; 
                 etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
-                LOG_INFO("Sampling rate ridotto a 20s per mitigare la congestione.\n");
             } else {
                 LOG_INFO("Rete tornata stabile. Disattivazione Meccanismo Adattivo.\n");
                 current_sampling_rate = 5; 
                 etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
-                LOG_INFO("Sampling rate ripristinato a 5s.\n");
             }
         }
     }
@@ -120,31 +132,15 @@ PROCESS_THREAD(smart_health_node, ev, data) {
     PROCESS_END();
 }
 
-/**
- * Questa funzione gestisce la lettura del registro hardware o simula su Cooja.
- */
 int leggi_temperatura_hardware_nrf(void) {
 #if CONTIKI_TARGET_COOJA
     return 36; 
 #else
-    // 1. Pulisce l'evento di fine misurazione precedente
     NRF_TEMP->EVENTS_DATARDY = 0;
-    
-    // 2. Dice alla periferica di avviare una nuova misurazione
     NRF_TEMP->TASKS_START = 1;
-    
-    // 3. Attende che l'hardware risponda che il dato è pronto
-    while(NRF_TEMP->EVENTS_DATARDY == 0) {
-        // Attesa bloccante brevissima
-    }
-    
-    // 4. Ferma la periferica per risparmiare energia
+    while(NRF_TEMP->EVENTS_DATARDY == 0) {}
     NRF_TEMP->TASKS_STOP = 1;
-    
-    // 5. Legge il registro corretto 'TEMP'
     int32_t raw_temp = NRF_TEMP->TEMP;
-    
-    // 6. Converte il dato raw dividendo per 4
     return (int)(raw_temp / 4) + 10 + (rand() % 2);
 #endif
 }

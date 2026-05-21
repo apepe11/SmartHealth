@@ -14,11 +14,12 @@ class DataService:
         return mysql.connector.connect(**self.config)
 
     def get_latest_measurements(self):
-        """Recupera l'ultimissimo dato salvato per ciascun sensore"""
+        """Recupera l'ultimissimo dato salvato per ciascun sensore inclusa la connettività"""
         connection = self._get_connection()
         cursor = connection.cursor(dictionary=True)
+        # Aggiunto m1.status alla SELECT
         query = """
-            SELECT m1.sensor_id, m1.heart_rate, m1.body_temperature, m1.spo2, m1.risk_score, m1.timestamp
+            SELECT m1.sensor_id, m1.heart_rate, m1.body_temperature, m1.spo2, m1.risk_score, m1.timestamp, m1.status
             FROM Health_Measurements m1
             INNER JOIN (
                 SELECT sensor_id, MAX(timestamp) as max_ts

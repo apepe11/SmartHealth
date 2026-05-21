@@ -1,75 +1,342 @@
-# view_components.py
 import tkinter as tk
 from tkinter import ttk
 
+
 class SensorCard(tk.LabelFrame):
-    def __init__(self, parent, sensor_name, sr_callback=None, t_callback=None):
-        super().__init__(parent, text=sensor_name, font=("Arial", 12, "bold"), padx=10, pady=10)
+    def __init__(self, parent, sensor_name, sr_callback=None):
+        super().__init__(
+            parent,
+            text=f"📡 {sensor_name}",
+            font=("Arial", 13, "bold"),
+            padx=15,
+            pady=15,
+            bg="white",
+            fg="#333333",
+            relief="groove",
+            borderwidth=2
+        )
+
         self.sensor_name = sensor_name
         self.sr_callback = sr_callback
-        self.t_callback = t_callback
-        
-        # Visualizzazione parametri vitali
-        self.lbl_hr = ttk.Label(self, text="Battito Cardiaco: -- bpm", font=("Arial", 11))
-        self.lbl_hr.pack(anchor="w", pady=2)
-        
-        self.lbl_temp = ttk.Label(self, text="Temperatura Corporea: -- °C", font=("Arial", 11))
-        self.lbl_temp.pack(anchor="w", pady=2)
-        
-        self.lbl_spo2 = ttk.Label(self, text="Ossigenazione (SpO2): -- %", font=("Arial", 11))
-        self.lbl_spo2.pack(anchor="w", pady=2)
-        
-        self.lbl_risk = ttk.Label(self, text="Classe di Rischio: --", font=("Arial", 11, "bold"))
-        self.lbl_risk.pack(anchor="w", pady=4)
-        
-        self.lbl_status = tk.Label(self, text="STATO: NESSUN DATO", bg="gray", fg="white", font=("Arial", 10, "bold"), width=20)
-        self.lbl_status.pack(pady=5)
-        
-        # ==========================================
-        # NUOVO PANNELLO DI CONTROLLO (USER INPUT LOGIC)
-        # ==========================================
-        ctrl_frame = ttk.LabelFrame(self, text="⚙️ Pannello di Controllo Comandi (CoAP PUT)")
-        ctrl_frame.pack(fill="x", pady=10, padx=5)
-        
-        # Blocco 1: Frequenza di Campionamento
-        ttk.Label(ctrl_frame, text="Sampling Rate (s):").grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.entry_sr = ttk.Entry(ctrl_frame, width=6)
-        self.entry_sr.insert(0, "5") # Valore di default
-        self.entry_sr.grid(row=0, column=1, padx=5, pady=5)
-        btn_send_sr = ttk.Button(ctrl_frame, text="Invia SR", command=self._on_sr_submit)
-        btn_send_sr.grid(row=0, column=2, padx=5, pady=5)
-        
-        # Blocco 2: Soglia di Allarme dell'Attuatore
-        ttk.Label(ctrl_frame, text="Soglia Rischio (0-2):").grid(row=1, column=0, padx=5, pady=5, sticky="w")
-        self.entry_t = ttk.Entry(ctrl_frame, width=6)
-        self.entry_t.insert(0, "2") # Default allarme su classe critica 2
-        self.entry_t.grid(row=1, column=1, padx=5, pady=5)
-        btn_send_t = ttk.Button(ctrl_frame, text="Invia Soglia", command=self._on_t_submit)
-        btn_send_t.grid(row=1, column=2, padx=5, pady=5)
+
+        # =========================
+        # SIMPLE STYLE
+        # =========================
+        bg_color = "white"
+        font_title = ("Arial", 12, "bold")
+        font_value = ("Arial", 18, "bold")
+        font_normal = ("Arial", 10)
+
+        # =========================
+        # HEART RATE
+        # =========================
+        hr_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
+        hr_frame.pack(fill="x", pady=3)
+
+        tk.Label(
+            hr_frame, 
+            text="❤️  HEART RATE", 
+            font=font_title, 
+            bg=bg_color,
+            fg="#555555"
+        ).pack(pady=(8, 2))
+
+        self.lbl_hr = tk.Label(
+            hr_frame, 
+            text="-- bpm", 
+            font=font_value, 
+            bg=bg_color,
+            fg="#333333"
+        )
+        self.lbl_hr.pack(pady=(0, 8))
+
+        # =========================
+        # BODY TEMPERATURE
+        # =========================
+        temp_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
+        temp_frame.pack(fill="x", pady=3)
+
+        tk.Label(
+            temp_frame, 
+            text="🌡️  BODY TEMPERATURE", 
+            font=font_title, 
+            bg=bg_color,
+            fg="#555555"
+        ).pack(pady=(8, 2))
+
+        self.lbl_temp = tk.Label(
+            temp_frame, 
+            text="-- °C", 
+            font=font_value, 
+            bg=bg_color,
+            fg="#333333"
+        )
+        self.lbl_temp.pack(pady=(0, 8))
+
+        # =========================
+        # OXYGEN SATURATION
+        # =========================
+        spo2_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
+        spo2_frame.pack(fill="x", pady=3)
+
+        tk.Label(
+            spo2_frame, 
+            text="🫁  OXYGEN SATURATION", 
+            font=font_title, 
+            bg=bg_color,
+            fg="#555555"
+        ).pack(pady=(8, 2))
+
+        self.lbl_spo2 = tk.Label(
+            spo2_frame, 
+            text="-- %", 
+            font=font_value, 
+            bg=bg_color,
+            fg="#333333"
+        )
+        self.lbl_spo2.pack(pady=(0, 8))
+
+        # =========================
+        # RISK LEVEL
+        # =========================
+        risk_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
+        risk_frame.pack(fill="x", pady=5)
+
+        tk.Label(
+            risk_frame, 
+            text="⚠️  RISK LEVEL", 
+            font=font_title, 
+            bg=bg_color,
+            fg="#555555"
+        ).pack(pady=(8, 2))
+
+        self.lbl_risk = tk.Label(
+            risk_frame, 
+            text="--", 
+            font=("Arial", 22, "bold"), 
+            bg=bg_color,
+            fg="#333333"
+        )
+        self.lbl_risk.pack(pady=(0, 8))
+
+        # =========================
+        # STATUS
+        # =========================
+        self.lbl_status = tk.Label(
+            self,
+            text="STATUS: WAITING",
+            font=("Arial", 12, "bold"),
+            bg="#f0f0f0",
+            fg="#666666",
+            relief="solid",
+            borderwidth=1,
+            pady=8
+        )
+        self.lbl_status.pack(fill="x", pady=8)
+
+        # =========================
+        # SAMPLING RATE CONTROL
+        # =========================
+        ctrl_frame = tk.LabelFrame(
+            self,
+            text="⚙️  CONTROL PANEL",
+            font=("Arial", 11, "bold"),
+            bg=bg_color,
+            fg="#333333",
+            relief="groove",
+            borderwidth=2,
+            padx=12,
+            pady=12
+        )
+        ctrl_frame.pack(fill="x", pady=5)
+
+        # Explanation
+        tk.Label(
+            ctrl_frame,
+            text="Set how often the sensor sends\ndata to the server:",
+            font=("Arial", 9),
+            bg=bg_color,
+            fg="#666666",
+            justify="left"
+        ).pack(anchor="w", pady=(0, 8))
+
+        # Frame for input and button
+        input_frame = tk.Frame(ctrl_frame, bg=bg_color)
+        input_frame.pack(fill="x")
+
+        # Label "Interval"
+        tk.Label(
+            input_frame,
+            text="Interval:",
+            font=("Arial", 10, "bold"),
+            bg=bg_color
+        ).pack(side="left", padx=(0, 5))
+
+        # Entry for value
+        self.entry_sr = tk.Entry(
+            input_frame,
+            width=5,
+            font=("Arial", 14, "bold"),
+            justify="center",
+            relief="solid",
+            borderwidth=1,
+            bg="white"
+        )
+        self.entry_sr.insert(0, "5")
+        self.entry_sr.pack(side="left", padx=(0, 5))
+
+        # Label "s"
+        tk.Label(
+            input_frame,
+            text="s",
+            font=("Arial", 10, "bold"),
+            bg=bg_color
+        ).pack(side="left", padx=(0, 15))
+
+        # Send button
+        self.btn_send = tk.Button(
+            input_frame,
+            text="SEND",
+            command=self._on_sr_submit,
+            font=("Arial", 11, "bold"),
+            bg="#4CAF50",
+            fg="white",
+            padx=15,
+            pady=4,
+            cursor="hand2",
+            relief="raised",
+            borderwidth=1
+        )
+        self.btn_send.pack(side="left")
+
+        # Feedback label
+        self.lbl_feedback = tk.Label(
+            ctrl_frame,
+            text="",
+            font=("Arial", 9, "bold"),
+            bg=bg_color,
+            fg="#4CAF50"
+        )
+        self.lbl_feedback.pack(anchor="w", pady=(8, 0))
 
     def _on_sr_submit(self):
-        if self.sr_callback:
-            val = self.entry_sr.get()
-            if val.isdigit():
-                self.sr_callback(int(val))
-
-    def _on_t_submit(self):
-        if self.t_callback:
-            val = self.entry_t.get()
-            if val.isdigit() and 0 <= int(val) <= 2:
-                self.t_callback(int(val))
-
-    def update_data(self, hr, body_temp, spo2, risk):
-        """Aggiorna i testi e i colori della card in base ai dati reali"""
-        self.lbl_hr.config(text=f"Battito Cardiaco: {hr} bpm")
-        self.lbl_temp.config(text=f"Temperatura Corporea: {body_temp} °C")
-        self.lbl_spo2.config(text=f"Ossigenazione (SpO2): {spo2} %")
-        self.lbl_risk.config(text=f"Classe di Rischio TinyML: {int(risk)}")
+        """Send new sampling rate"""
+        value = self.entry_sr.get()
         
-        risk_class = int(risk)
-        if risk_class == 2:
-            self.lbl_status.config(text="🔴 EMERGENZA CRITICA", bg="red", fg="white")
-        elif risk_class == 1:
-            self.lbl_status.config(text="🟠 MONITORAGGIO", bg="dark orange", fg="white")
+        # Validation
+        if not value.isdigit():
+            self.lbl_feedback.config(text="❌ ERROR: Please enter a number!", fg="red")
+            return
+        
+        rate = int(value)
+        if rate < 1:
+            self.lbl_feedback.config(text="❌ ERROR: Minimum 1 second!", fg="red")
+            return
+        
+        if rate > 3600:
+            self.lbl_feedback.config(text="❌ ERROR: Maximum 3600 seconds!", fg="red")
+            return
+        
+        # Send callback
+        if self.sr_callback:
+            self.sr_callback(rate)
+            self.lbl_feedback.config(
+                text=f"✅ OK! Sampling rate set to {rate} seconds",
+                fg="green"
+            )
+            
+            # Visual effect on button
+            self.btn_send.config(bg="#45a049", text="✓ SENT")
+            self.after(1500, lambda: self.btn_send.config(bg="#4CAF50", text="SEND"))
+
+    def update_data(self, hr, body_temp, spo2, risk, status="ONLINE"):
+        """Update values and status"""
+        
+        # NEW: Handle SENSOR_MISSING state
+        if status == "SENSOR_MISSING":
+            self.lbl_hr.config(text="-- bpm", fg="#999999")
+            self.lbl_temp.config(text="-- °C", fg="#999999")
+            self.lbl_spo2.config(text="-- %", fg="#999999")
+            self.lbl_risk.config(text="NO DATA", fg="#999999")
+            self.lbl_status.config(
+                text="❌ SENSOR NOT PRESENT - NO MEASUREMENT AVAILABLE",
+                bg="#9E9E9E",
+                fg="white",
+                font=("Arial", 11, "bold")
+            )
+            # Disable control panel when sensor is missing
+            self.btn_send.config(state="disabled", bg="#cccccc")
+            self.entry_sr.config(state="disabled", bg="#f0f0f0")
+            return
+        
+        # Re-enable controls if sensor comes back online
+        self.btn_send.config(state="normal", bg="#4CAF50")
+        self.entry_sr.config(state="normal", bg="white")
+
+        if status == "NODE_FAILURE":
+            self.lbl_hr.config(text="-- bpm", fg="#999999")
+            self.lbl_temp.config(text="-- °C", fg="#999999")
+            self.lbl_spo2.config(text="-- %", fg="#999999")
+            self.lbl_risk.config(text="UNAVAILABLE", fg="#999999")
+            self.lbl_status.config(
+                text="🚨 STATUS: NODE OFFLINE",
+                bg="#666666",
+                fg="white"
+            )
+            return
+
+        # Format values
+        hr_text = f"{int(hr)} bpm" if hr else "-- bpm"
+        temp_text = f"{float(body_temp):.1f} °C" if body_temp else "-- °C"
+        spo2_text = f"{int(spo2)} %" if spo2 else "-- %"
+
+        self.lbl_hr.config(text=hr_text, fg="#333333")
+        self.lbl_temp.config(text=temp_text, fg="#333333")
+        self.lbl_spo2.config(text=spo2_text, fg="#333333")
+
+        # Risk management
+        risk_level = int(float(risk))
+        
+        if risk_level == 0:
+            self.lbl_risk.config(text="NORMAL", fg="#4CAF50")
+            self.lbl_status.config(
+                text="🟢 STATUS: PATIENT STABLE",
+                bg="#4CAF50",
+                fg="white"
+            )
+        elif risk_level == 1:
+            self.lbl_risk.config(text="WARNING", fg="#FF9800")
+            self.lbl_status.config(
+                text="🟡 STATUS: ATTENTION REQUIRED",
+                bg="#FF9800",
+                fg="white"
+            )
         else:
-            self.lbl_status.config(text="🟢 PAZIENTE STABILE", bg="green", fg="white")
+            self.lbl_risk.config(text="CRITICAL", fg="#f44336")
+            self.lbl_status.config(
+                text="🔴 STATUS: EMERGENCY!",
+                bg="#f44336",
+                fg="white"
+            )
+
+
+# =========================
+# USAGE EXAMPLE
+# =========================
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Patient Monitor")
+    root.geometry("500x650")
+    root.configure(bg="#f5f5f5")
+    
+    def callback(val):
+        print(f"✓ Sampling rate changed to {val} seconds")
+    
+    # Create card
+    card = SensorCard(root, "Patient 01", callback)
+    card.pack(padx=20, pady=20, fill="both", expand=True)
+    
+    # Test with data
+    card.update_data(75, 36.8, 98, 0)
+    
+    root.mainloop()
