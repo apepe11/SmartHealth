@@ -4,11 +4,13 @@ Un sistema integrato di **monitoraggio remoto della salute** con IoT, machine le
 
 ## 📋 Panoramica del Progetto
 
-- **IoT Sensor Nodes**: Contiki-NG - Raccolgono frequenza cardiaca, saturazione O₂ e calcolano il rischio clinico
-- **IoT Actuator Node**: Contiki-NG - Riceve comandi CoAP dal cloud per attivare allarmi
-- **Cloud Backend** (Python): Polling periodico dei sensori via CoAP, salvataggio su MySQL, logica di allarme
-- **Cloud Frontend** (Python/Tkinter): Dashboard real-time che legge i dati dal database MySQL
-- **Machine Learning**: Classificatore Python per l'analisi del rischio clinico (embedding su nodi)
+SmartHealth è una piattaforma IoT completa che integra:
+
+- 🌡️ **Sensori IoT (Contiki-NG su NRF52840)** per frequenza cardiaca, SpO₂ e rischio clinico
+- 🚨 **Attuatore IoT** per gestione allarmi via CoAP
+- ☁️ **Cloud Backend Python** per acquisizione dati e storage su MySQL
+- 📊 **Dashboard Tkinter** per visualizzazione real-time
+- 🤖 **Machine Learning** per classificazione del rischio clinico
 
 ## 🗂️ Struttura del Progetto
 
@@ -33,7 +35,9 @@ SmartHealth/
 │   ├── ML_model.ipynb               # Training classificatore
 │   └── dataset/
 │       └── smart_health_dataset.csv
+├── SimulazioneCooja/                # File simulazione Cooja
 └── Documentation/
+```
 
 ## ⚙️ Setup Iniziale
 
@@ -78,15 +82,59 @@ Questo crea:
 
 > 💡 Se usi una password diversa, modifica `frontend/configuration_manager.py`
 
-## 🚀 Avvio del Sistema
+## 🚀 Avvio del Sistema (Hardware Reale + Cooja)
 
-Il sistema ha **due moduli indipendenti** che vanno lanciati in **due terminali separati**:
+Il sistema richiede l'avvio sequenziale di più componenti. Segui i passi nell'ordine indicato.
 
-### Terminal 1: Backend Cloud (Polling CoAP + MySQL)
+### Passo 1️⃣ — Collegare i Dongle Fisici
+
+Collega i dongle NRF52840 alle porte USB del PC. Verifica che siano riconosciuti dal sistema (es. `/dev/ttyACM0`, `/dev/ttyACM1`, ...).
+
+### Passo 2️⃣ — Avviare il Border Router sul Dongle
+
+Dalla cartella del border router, flasha e connetti il dongle come router di confine IPv6:
+
+```bash
+make TARGET=nrf52840 BOARD=dongle connect-router PORT=/dev/ttyACM0
+```
+
+Questo configura il dongle come border router RPL e rende raggiungibile la rete dei nodi IoT.
+
+### Passo 3️⃣ — Avviare Cooja e Caricare la Simulazione
+
+Apri il simulatore **Cooja** e carica il file di simulazione presente nella cartella `SimulazioneCooja/`. Seleziona il file `.csc` dalla finestra di apertura di Cooja.
+
+### Passo 4️⃣ — Avviare la Simulazione in Cooja
+
+Una volta caricata la simulazione, premi **Start** in Cooja per avviare i nodi virtuali (sensori e attuatore).
+
+### Passo 5️⃣ — Avviare il Tunnel IPv6 (tunslip6)
+
+In un terminale dedicato, avvia il tunnel IPv6 tra il PC e la rete Cooja tramite `tunslip6`:
+
+```bash
+sudo ./tunslip6 -a 127.0.0.1 -p 60001 fd01::1/64 -t tun1
+```
+
+Tieni questo terminale aperto per tutta la durata del sistema. Il tunnel permette al backend Python di comunicare via CoAP con i nodi della simulazione.
+
+### Passo 6️⃣ — Attivare il Virtual Environment
+
+Apri un nuovo terminale, spostati nella cartella `Cloud_Application` e attiva il virtual environment:
 
 ```bash
 cd Cloud_Application
 source venv/bin/activate
+```
+
+Il prompt dovrebbe diventare simile a:
+```
+(venv) [user@host Cloud_Application]$
+```
+
+### Passo 7️⃣ — Avviare il Backend Cloud
+
+```bash
 python SmartHealthCloud.py
 ```
 
@@ -103,11 +151,12 @@ In ascolto tramite Polling periodico... (Premi Ctrl+C per uscire)
 [✓] Dati salvati! (Sensore: Sensore_1 | HR: 75, SpO2: 98, Risk: 0.15)
 ```
 
-### Terminal 2: Frontend Dashboard (UI Tkinter)
+### Passo 8️⃣ — Avviare il Frontend Dashboard
+
+Apri un ulteriore terminale, spostati nella cartella `frontend` (con il venv attivo) e avvia la dashboard:
 
 ```bash
 cd Cloud_Application/frontend
-source venv/bin/activate
 python SmartHealthUI.py
 ```
 
@@ -119,8 +168,12 @@ Questo avvia:
 ## 📊 Flusso Dati
 
 ```
-IoT Sensors (Contiki-NG)
+NRF52840 Dongle (Border Router)
+    ↓ (RPL/IPv6)
+IoT Sensors (Contiki-NG in Cooja)
     ↓ (CoAP)
+tunslip6 (Tunnel IPv6)
+    ↓
 Backend Python (SmartHealthCloud.py)
     ↓ (INSERT)
 MySQL Database (SmartHealthIoT)
@@ -157,13 +210,17 @@ ACTUATOR_IP = "fd00::203:3:3:3"   # Nodo attuatore
 | `Unknown database 'SmartHealthIoT'` | Esegui `mysql -u root -p1 < backend/db_setup.sql` |
 | Frontend non mostra dati | Verifica che il backend sia in esecuzione e scriva nel DB |
 | Timeout CoAP | Controlla che Cooja e il tunnel tunslip6 siano attivi |
+| Dongle non riconosciuto | Verifica con `ls /dev/ttyACM*` e controlla i permessi USB |
+| `tunslip6: permission denied` | Usa `sudo` per avviare tunslip6 |
+| Nodi Cooja non raggiungibili | Verifica che il tunnel `tun1` sia attivo e che il border router sia avviato prima di Cooja |
 
 ## 📦 Note Importanti
 
-- ⚠️ I nodi IoT devono essere simulati in **Cooja** (simulatore Contiki-NG)
-- Per il tunnel IPv6 con Cooja, usa: `sudo tunslip6 -a 127.0.0.1 aaaa::1/64`
+- ⚠️ I nodi IoT vengono simulati in **Cooja** (simulatore Contiki-NG)
+- Il border router fisico (dongle NRF52840) deve essere collegato **prima** di avviare Cooja
+- Il tunnel `tunslip6` deve restare attivo per tutta la sessione
 - Il database persiste tra avvii (usa `DROP DATABASE SmartHealthIoT;` per resettare)
-- Password di default non dovrebbe essere usata in produzione
+- La password di default non dovrebbe essere usata in produzione
 
 ## 📚 Ulteriori Risorse
 
