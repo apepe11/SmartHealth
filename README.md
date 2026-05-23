@@ -197,6 +197,20 @@ SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"
 ACTUATOR_IP = "fd01::202:2:2:2"
 ```
 
+## Accuratezza modello ML 
+
+--- REPORT DI ACCURATEZZA TINYML ---
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00       215
+           1       1.00      0.90      0.95       473
+           2       0.91      1.00      0.95       494
+
+    accuracy                           0.96      1182
+   macro avg       0.97      0.97      0.97      1182
+weighted avg       0.96      0.96      0.96      1182
+
+
 ## 📦 Note Importanti
 
 - In cooja vengono simulati un LBR e un attuatore. Dal punto di vista dell'hardware abbiamo anche qui un LBR ed un sensore
