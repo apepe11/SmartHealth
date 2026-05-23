@@ -127,7 +127,7 @@ Una volta caricata la simulazione, premi **Start** in Cooja per avviare i nodi v
 
 ### Passo 5️⃣ — Avviare il Tunnel IPv6 (tunslip6)
 
-In un terminale dedicato, avvia il tunnel IPv6 tra il PC e la rete Cooja tramite `tunslip6`:
+Nella simulazione Cooja, per il motes 1 (il Border Router ), clicca su start e poi fai partire la simulazione. In un terminale dedicato, avvia il tunnel IPv6 tra il PC e la rete Cooja tramite `tunslip6`:
 
 ```bash
 cd /contiki-ng/tools/serial-io
