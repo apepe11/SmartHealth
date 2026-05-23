@@ -4,33 +4,28 @@
 #include "dev/button-hal.h"
 #include <stdlib.h> 
 
-// Inclusione corretta dell'header per il routing in cima al file
 #include "net/routing/routing.h"
 
-// Controlla se NON siamo su Cooja: solo in quel caso include i driver fisici nRF
 #if !CONTIKI_TARGET_COOJA
 #include "nrfx.h"
 #endif
 
-// Inclusione dell'header generato da emlearn con il Random Forest
-#include "vitals_classifier.h"
+#include "vitals_classifier.h" //includo modello di ML
 
 #define LOG_MODULE "SmartHealth-Node"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-// Dichiarazione delle risorse esterne
+
 extern coap_resource_t res_vitals;
 extern coap_resource_t res_sampling;
 
-// --- VALORI INIZIALI REALISTICI PER LA PARTENZA ---
-int current_hr = 90;      // Parte da 90 bpm
-int current_spo2 = 98;    // Parte da 98%
-int current_temp = 34;    // Parte da 34 C
+int current_hr = 90;      
+int current_spo2 = 98;    
+int current_temp = 34;    
 int current_risk = 0;
 
-// Frequenza di default in secondi
+// rate attuale + variabile per il meccanismo adattivo
 uint16_t current_sampling_rate = 5; 
-// Variabile di stato per la modalità adattiva
 static bool is_network_congested = false; 
 
 int leggi_temperatura_hardware_nrf(void);
@@ -45,6 +40,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
 
     LOG_INFO("Inizializzazione Nodo Smart Health con ML...\n");
     
+    //attivo risore CoAP
     coap_activate_resource(&res_vitals, "vitals");
     coap_activate_resource(&res_sampling, "sampling");
     
@@ -55,16 +51,15 @@ PROCESS_THREAD(smart_health_node, ev, data) {
     while(1) {
         PROCESS_WAIT_EVENT();
 
+        //timer per aggiornare i parametri 
         if(ev == PROCESS_EVENT_TIMER && data == &periodic_timer) {
             
-            // =================================================================
-            // 1. GESTIONE TEMPERATURA (Variazione dolce tra 36 e 40)
-            // =================================================================
+            //temperatura: variazione dolce tra -1 e +1 grado ad ogni ciclo
             #if CONTIKI_TARGET_COOJA
             // Genera una variazione di -1, 0, o +1 grado
             int delta_temp = (rand() % 3) - 1; 
             current_temp += delta_temp;
-            // Mantieni nei limiti 36-40
+
             if(current_temp < 36) current_temp = 36;
             if(current_temp > 40) current_temp = 40;
             #else
@@ -73,12 +68,11 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             if(current_temp > 40) current_temp = 40;
             #endif
 
-            // =================================================================
-            // 2. GENERAZIONE CASUALE OMOGENEA: HR e SpO2
-            // =================================================================
+
             // HR: variazione dolce tra -3 e +3 bpm ad ogni ciclo
             int delta_hr = (rand() % 7) - 3; 
             current_hr += delta_hr;
+
             // Mantieni nei limiti 80-120
             if(current_hr < 80) current_hr = 80;
             if(current_hr > 120) current_hr = 120;
@@ -86,13 +80,12 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             // SpO2: variazione dolce tra -1 e +1 % ad ogni ciclo
             int delta_spo2 = (rand() % 3) - 1;
             current_spo2 += delta_spo2;
+
             // Mantieni nei limiti 88-100
             if(current_spo2 < 88) current_spo2 = 88;
             if(current_spo2 > 100) current_spo2 = 100;
 
-            // =================================================================
-            // 3. INFERENZA MACHINE LEARNING
-            // =================================================================
+            //inferenza ML 
             int16_t ml_features[3];
             ml_features[0] = (int16_t)current_hr;
             ml_features[1] = (int16_t)current_temp;
@@ -101,24 +94,23 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             current_risk = (int)vitals_rf_model_predict(ml_features, 3);
 
             #if CONTIKI_TARGET_COOJA
-            LOG_INFO("[SIMULAZIONE COOJA] Temp: %d C | HR: %d bpm | SpO2: %d%%\n", current_temp, current_hr, current_spo2);
+            LOG_INFO("Temp: %d C | HR: %d bpm | SpO2: %d%%\n", current_temp, current_hr, current_spo2);
             #else
-            LOG_INFO("[HARDWARE REAL] Temp: %d C | HR: %d bpm | SpO2: %d%%\n", current_temp, current_hr, current_spo2);
+            LOG_INFO("Temp: %d C | HR: %d bpm | SpO2: %d%%\n", current_temp, current_hr, current_spo2);
             #endif
             
-            LOG_INFO("[EMLEARN ML] Esito Random Forest (Risk): %d\n", current_risk);
-            
+            LOG_INFO("Esito Random Forest (Risk): %d\n", current_risk);
             coap_notify_observers(&res_vitals);
             
             etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
         }
         
-        // --- MECCANISMO ADATTIVO ---
+        //pressione del pulsanate per simulare congestione 
         if(ev == button_hal_press_event) {
             is_network_congested = !is_network_congested;
             
             if(is_network_congested) {
-                LOG_INFO("STRESS TEST: Rete congestionata rilevata! Attivazione Meccanismo Adattivo...\n");
+                LOG_INFO("STRESS TEST. Attivazione Meccanismo Adattivo...\n");
                 current_sampling_rate = 20; 
                 etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
             } else {
@@ -132,6 +124,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
     PROCESS_END();
 }
 
+//funziona che legge la temperatura dal sensore 
 int leggi_temperatura_hardware_nrf(void) {
 #if CONTIKI_TARGET_COOJA
     return 36; 

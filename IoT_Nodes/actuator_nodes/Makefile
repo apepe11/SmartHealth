@@ -13,7 +13,7 @@ CFLAGS += -Wno-error=discarded-qualifiers
 CFLAGS += -Wno-error=implicit-function-declaration
 CFLAGS += -Wno-error=unused-but-set-variable
 
-# Fondamentale per l'attuatore: abilita la funzionalità Client e Observe
+
 CFLAGS += -DCOAP_OBSERVE_CLIENT=1
 
 CONTIKI = /home/antoniio/Scrivania/contiki-ng

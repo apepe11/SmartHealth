@@ -13,15 +13,15 @@
 #define LOG_MODULE "SmartHealth-Actuator"
 #define LOG_LEVEL LOG_LEVEL_INFO
 
-#define SENSOR_EP "coap://[fd00::f6ce:36b9:a760:ecea]:5683"
-#define OBSERVE_URI "vitals"
+#define SENSOR_EP "coap://[fd00::f6ce:36b9:a760:ecea]:5683" //sensore da osservare
+#define OBSERVE_URI "vitals" //risorsa da osservare per il rischio 
 
 extern coap_resource_t res_threshold;
 
-// Threshold corrente
+// threshold corrente
 int alarm_threshold = 1;
 
-// Ultimo rischio ricevuto
+// ultimo rischio ricevuto 
 int current_risk = 0;
 
 static coap_endpoint_t server_ep;
@@ -30,9 +30,8 @@ static coap_observee_t *obs_session = NULL;
 PROCESS(actuator_node, "Smart Health Actuator Node");
 AUTOSTART_PROCESSES(&actuator_node);
 
-/*---------------------------------------------------------------------------*/
-// Funzione centrale aggiornamento LED
-/*---------------------------------------------------------------------------*/
+
+//funzione di utlitità per aggiornamento LED 
 void update_leds(void)
 {
     leds_off(LEDS_ALL);
@@ -59,110 +58,76 @@ void update_leds(void)
     }
 }
 
-/*---------------------------------------------------------------------------*/
-// Callback Observe
-/*---------------------------------------------------------------------------*/
-static void
-notification_callback(coap_observee_t *obs,
-                      void *notification,
-                      coap_notification_flag_t flag)
-{
-    int len = 0;
 
+// Callback Observe
+static void notification_callback(coap_observee_t *obs, void *notification, coap_notification_flag_t flag) {
+    int len = 0;
     const uint8_t *payload = NULL;
 
     if(notification != NULL) {
-        len = coap_get_payload(notification, &payload);
+        len = coap_get_payload(notification, &payload); //prendo il payaload 
     }
 
+    //estraggo campo risk da JSON e aggiorno LED
     if(len > 0) {
-
         char data[128];
-
         memcpy(data, payload, len);
-
         data[len] = '\0';
-
         LOG_INFO("Dati ricevuti: %s\n", data);
-
         char *ptr = strstr(data, "\"risk\":");
-
         if(ptr != NULL) {
-
             current_risk = atoi(ptr + 7);
-
             LOG_INFO("Nuovo risk=%d\n", current_risk);
-
-            // Aggiorna subito LED
             update_leds();
         }
     }
 }
 
-/*---------------------------------------------------------------------------*/
-// Processo principale
-/*---------------------------------------------------------------------------*/
+//processo princpale attuatore 
 PROCESS_THREAD(actuator_node, ev, data)
 {
     static struct etimer rpl_timer;
 
     PROCESS_BEGIN();
-
     LOG_INFO("Avvio Nodo Attuatore...\n");
-
+    //attivo la risora per la soglia di allarme 
     coap_activate_resource(&res_threshold, "threshold");
-
     LOG_INFO("Risorsa /threshold attivata.\n");
 
-    // Stato iniziale
+    // inizializzo LED
     leds_off(LEDS_ALL);
-
     leds_single_on(LEDS_GREEN);
 
     etimer_set(&rpl_timer, CLOCK_SECOND * 5);
 
+    //attendo che la rete RPL sia formata 
     while(!NETSTACK_ROUTING.node_is_reachable()) {
-
-        LOG_INFO("Attesa rete RPL...\n");
-
-        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER &&
-                                 data == &rpl_timer);
-
+        LOG_INFO("Attendo rete RPL...\n");
+        PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER && data == &rpl_timer);
         etimer_reset(&rpl_timer);
     }
 
     LOG_INFO("Rete RPL connessa!\n");
 
-    if(coap_endpoint_parse(SENSOR_EP,
-                           strlen(SENSOR_EP),
-                           &server_ep) == 0) {
-
+    //parsing endpoint sensore(server)
+    if(coap_endpoint_parse(SENSOR_EP, trlen(SENSOR_EP), &server_ep) == 0) {
         LOG_ERR("Errore parsing endpoint!\n");
-
         PROCESS_EXIT();
     }
 
-    LOG_INFO("Observe -> %s/%s\n",
-             SENSOR_EP,
-             OBSERVE_URI);
+    LOG_INFO("Observe -> %s/%s\n", SENSOR_EP, OBSERVE_URI);
 
-    obs_session =
-        coap_obs_request_registration(&server_ep,
-                                      OBSERVE_URI,
-                                      notification_callback,
-                                      NULL);
+    //mi registro alla observe per le notifiche di aggiornamento del rischio 
+    obs_session = coap_obs_request_registration(&server_ep, OBSERVE_URI, notification_callback, NULL);
 
     if(obs_session == NULL) {
-
         LOG_ERR("Observe fallita!\n");
-
     } else {
-
         LOG_INFO("Observe avviata!\n");
     }
 
     while(1) {
-        PROCESS_YIELD();
+        PROCESS_YIELD(); //attendo eventi 
     }
 
     PROCESS_END();

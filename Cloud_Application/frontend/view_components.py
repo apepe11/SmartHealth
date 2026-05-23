@@ -19,17 +19,12 @@ class SensorCard(tk.LabelFrame):
         self.sensor_name = sensor_name
         self.sr_callback = sr_callback
 
-        # =========================
-        # SIMPLE STYLE
-        # =========================
         bg_color = "white"
         font_title = ("Arial", 12, "bold")
         font_value = ("Arial", 18, "bold")
         font_normal = ("Arial", 10)
 
-        # =========================
         # HEART RATE
-        # =========================
         hr_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
         hr_frame.pack(fill="x", pady=3)
 
@@ -50,9 +45,7 @@ class SensorCard(tk.LabelFrame):
         )
         self.lbl_hr.pack(pady=(0, 8))
 
-        # =========================
         # BODY TEMPERATURE
-        # =========================
         temp_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
         temp_frame.pack(fill="x", pady=3)
 
@@ -73,9 +66,7 @@ class SensorCard(tk.LabelFrame):
         )
         self.lbl_temp.pack(pady=(0, 8))
 
-        # =========================
         # OXYGEN SATURATION
-        # =========================
         spo2_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
         spo2_frame.pack(fill="x", pady=3)
 
@@ -96,9 +87,7 @@ class SensorCard(tk.LabelFrame):
         )
         self.lbl_spo2.pack(pady=(0, 8))
 
-        # =========================
         # RISK LEVEL
-        # =========================
         risk_frame = tk.Frame(self, bg=bg_color, relief="solid", borderwidth=1)
         risk_frame.pack(fill="x", pady=5)
 
@@ -119,9 +108,7 @@ class SensorCard(tk.LabelFrame):
         )
         self.lbl_risk.pack(pady=(0, 8))
 
-        # =========================
         # STATUS
-        # =========================
         self.lbl_status = tk.Label(
             self,
             text="STATUS: WAITING",
@@ -134,9 +121,7 @@ class SensorCard(tk.LabelFrame):
         )
         self.lbl_status.pack(fill="x", pady=8)
 
-        # =========================
         # SAMPLING RATE CONTROL
-        # =========================
         ctrl_frame = tk.LabelFrame(
             self,
             text="⚙️  CONTROL PANEL",
@@ -225,16 +210,16 @@ class SensorCard(tk.LabelFrame):
         
         # Validation
         if not value.isdigit():
-            self.lbl_feedback.config(text="❌ ERROR: Please enter a number!", fg="red")
+            self.lbl_feedback.config(text=" Please enter a number!", fg="red")
             return
         
         rate = int(value)
         if rate < 1:
-            self.lbl_feedback.config(text="❌ ERROR: Minimum 1 second!", fg="red")
+            self.lbl_feedback.config(text=" Minimum 1 second!", fg="red")
             return
         
         if rate > 3600:
-            self.lbl_feedback.config(text="❌ ERROR: Maximum 3600 seconds!", fg="red")
+            self.lbl_feedback.config(text=" Maximum 3600 seconds!", fg="red")
             return
         
         # Send callback
@@ -320,17 +305,14 @@ class SensorCard(tk.LabelFrame):
             )
 
 
-# =========================
-# USAGE EXAMPLE
-# =========================
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Patient Monitor")
-    root.geometry("500x650")
     root.configure(bg="#f5f5f5")
     
     def callback(val):
-        print(f"✓ Sampling rate changed to {val} seconds")
+        print(f" Sampling rate changed to {val} seconds")
     
     # Create card
     card = SensorCard(root, "Patient 01", callback)

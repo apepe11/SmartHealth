@@ -11,10 +11,10 @@ class DBManager:
             'database': database
         }
         self.connection = None
-        self.min_timeout = 10  # Timeout minimo in secondi
-        self.sampling_rates = {}  # Dizionario per memorizzare i sampling rate per sensore
-        # Lista dei sensori attivi (se None, prendi tutti)
-        self.active_sensors = active_sensors or [1]  # Default: solo sensore 1
+        self.min_timeout = 10  # timeout per sensore in assenza di dati
+        self.sampling_rates = {}  # memorizza i sampling rate per sensore
+        # lista dei sensori attivi (se None, prendi tutti)
+        self.active_sensors = active_sensors or [1] 
 
     def connect(self):
         try:
@@ -23,14 +23,14 @@ class DBManager:
                 self.connection.autocommit = True
             return True
         except Error as e:
-            print(f"[Errore Database] Connessione fallita: {e}")
+            print(f" Connessione fallita: {e}")
             return False
 
     def update_sampling_rate(self, sensor_id, rate_seconds):
         """Aggiorna il sampling rate per un sensore specifico"""
         if sensor_id in self.active_sensors:
             self.sampling_rates[sensor_id] = rate_seconds
-            print(f"[DBManager] Sensor {sensor_id} sampling rate updated to {rate_seconds}s")
+            print(f" Sensor {sensor_id} sampling rate updated to {rate_seconds}s")
 
     def fetch_latest_measurements(self):
         """
@@ -43,7 +43,7 @@ class DBManager:
         try:
             cursor = self.connection.cursor(buffered=True, dictionary=True)
             
-            # Filtra solo i sensori attivi
+            # filtra solo i sensori attivi
             placeholders = ','.join(['%s'] * len(self.active_sensors))
             query = f"""
                 SELECT m1.sensor_id, m1.heart_rate, m1.body_temperature, m1.spo2, m1.risk_score, m1.timestamp, m1.status
@@ -59,27 +59,28 @@ class DBManager:
             cursor.execute(query, tuple(self.active_sensors))
             results = cursor.fetchall()
             
-            # Check for sensor timeout with dynamic timeout based on sampling rate
+            # verifico timeout e aggiorno lo status dei sensori 
             for record in results:
                 sensor_id = record.get("sensor_id")
                 last_timestamp = record.get("timestamp")
                 
                 if last_timestamp:
-                    # Get current sampling rate for this sensor (default 5 seconds)
+                  
                     sampling_rate = self.sampling_rates.get(sensor_id, 5)
-                    # Dynamic timeout: max(min_timeout, 2 * sampling_rate)
+
+                    # timeout dinamico: max(min_timeout, 2 * sampling_rate)
                     timeout = max(self.min_timeout, sampling_rate * 2)
                     time_diff = datetime.now() - last_timestamp
                     
-                    # Solo log se il timeout è superato (evita spam quando è normale)
+                    # se il tempo trascorso dall'ultimo dato supera il timeout, segna il sensore come MISSING
                     if time_diff > timedelta(seconds=timeout):
                         record["status"] = "SENSOR_MISSING"
-                        print(f"[DBManager] Sensor {sensor_id} MISSING: no data for {time_diff.total_seconds():.0f}s (timeout={timeout}s, SR={sampling_rate}s)")
+                        print(f" Sensor {sensor_id} MISSING: no data for {time_diff.total_seconds():.0f}s (timeout={timeout}s, SR={sampling_rate}s)")
             
             cursor.close()
             return results
         except Error as e:
-            print(f"[Errore Database] Impossibile recuperare gli ultimi dati: {e}")
+            print(f" Impossibile recuperare gli ultimi dati: {e}")
             return []
 
     def close(self):

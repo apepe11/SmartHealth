@@ -4,9 +4,7 @@ import re
 import mysql.connector
 from aiocoap import *
 
-# ==========================================
-# 1. CLASSE MYSQL (CORRETTA)
-# ==========================================
+# classe per gestire la connessione con il db MYsql 
 class MySQL:
     def __init__(self):
         self.host = "localhost"
@@ -34,49 +32,44 @@ class MySQL:
     def close(self):
         self.connection.close()
 
-# ==========================================
-# 2. INDIRIZZI IP DELLA RETE MISTA (HARDWARE + COOJA)
-# ==========================================
-SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"   
-ACTUATOR_IP = "fd01::202:2:2:2"
+
+SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"   # indirizzo IPv6 del sensore fisico 
+ACTUATOR_IP = "fd01::202:2:2:2"  # indirizzo IPv6 del attuatore cooja 
 
 db = MySQL()
 
-# Variabile per tenere traccia dell'ultimo stato dell'attuatore (evita invii inutili)
+# tiene traccia dell'ultimo stato dell'attuatore 
 last_actuator_state = -1
 
-# ==========================================
-# 3. LOGICA DI RETE E GESTIONE DATI
-# ==========================================
 async def update_actuator(sensor_name, new_risk_level):
     """Aggiorna dinamicamente la soglia dell'attuatore in base al rischio attuale (0, 1, 2)"""
     
     if new_risk_level == 2:
-        print(f"⚠️ EMERGENZA (Rischio 2) rilevata su {sensor_name}! Attivo LED ROSSO su {ACTUATOR_IP}...")
+        print(f" EMERGENZA (Rischio 2) rilevata su {sensor_name}! Attivo LED ROSSO su {ACTUATOR_IP}...")
     elif new_risk_level == 1:
-        print(f"⚠️ ATTENZIONE (Rischio 1) rilevata su {sensor_name}. Aggiorno l'attuatore a rischio medio...")
+        print(f" ATTENZIONE (Rischio 1) rilevata su {sensor_name}. Attivo LED Giallo su {ACTUATOR_IP}...")
     else:
-         print(f"✅ SITUAZIONE NORMALE (Rischio 0) su {sensor_name}. Ripristino LED VERDE su {ACTUATOR_IP}...")
+         print(f" SITUAZIONE NORMALE (Rischio 0) su {sensor_name}. Attivo LED VERDE su {ACTUATOR_IP}...")
 
     try:
         context = await Context.create_client_context()
         
-        # Inviamo il livello di rischio dinamico (0, 1, o 2)
+        # invio il livello di rischio dinamico al attuatore 
         payload_data = {"new_t": new_risk_level} 
         payload_bytes = json.dumps(payload_data).encode('utf-8')
         
         request = Message(
-            code=PUT, 
+            code=PUT, # PUT perchè stiamo aggiornando la soglia dell'attuatore
             payload=payload_bytes, 
             uri=f"coap://[{ACTUATOR_IP}]:5683/threshold"
         )
-        request.opt.content_format = 50 # APPLICATION_JSON
+        request.opt.content_format = 50 
         
         response = await context.request(request).response
-        print(f"[✓] Attuatore aggiornato con successo! (Risposta CoAP: {response.code})")
+        print(f"Attuatore aggiornato con successo! (Risposta CoAP: {response.code})")
         
     except Exception as e:
-        print(f"[❌ ERRORE] Impossibile contattare l'attuatore: {e}")
+        print(f"Impossibile contattare l'attuatore: {e}")
 
 def handle_incoming_data(payload_text, sensor_name):
     """Esegue il parsing dei dati e il salvataggio sul Database MySQL"""
@@ -88,34 +81,37 @@ def handle_incoming_data(payload_text, sensor_name):
         body_temperature = int(data.get('body_temperature', 0))
         spo2 = int(data.get('spo2', 0))
         
-        # Il rischio è un intero (Classe 0, 1, 2) generato dal TinyML
+        # assegno rischio in base alla soglia
         risk_score = int(data.get('risk', 0))
         
-        sensor_map = {'Sensore_1': 1}
+        sensor_map = {'Sensori': 1}
         sensor_id = sensor_map.get(sensor_name, 0)
         
+        #query per inserire i dati nel database
         query = "INSERT INTO Health_Measurements (sensor_id, heart_rate, body_temperature, spo2, risk_score) VALUES (%s, %s, %s, %s, %s)"
         success = db.query(query, (sensor_id, hr, body_temperature, spo2, risk_score))
         
         if success:
-            print(f"[✓] DB Aggiornato -> Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Classe Rischio: {risk_score}")
+            print(f" DB Aggiornato -> Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Classe Rischio: {risk_score}")
             
-        # 🔴 LOGICA DINAMICA: Aggiorna l'attuatore SOLO se il livello di rischio è cambiato
+        # aggiorno l'attuatore solo se la soglia cambia 
         if risk_score != last_actuator_state:
             asyncio.create_task(update_actuator(sensor_name, risk_score))
             last_actuator_state = risk_score
             
     except Exception as e:
-        print(f"[❌ ERRORE PARSING] Errore nei dati da {sensor_name}: {e}")
+        print(f"Errore nei dati da {sensor_name}: {e}")
 
-# ==========================================
-# 🔴 FUNZIONE: OSSERVAZIONE ASINCRONA
-# ==========================================
+
 async def observe_sensor(sensor_ip, sensor_name):
-    """Si iscrive alla risorsa /vitals del sensore sfruttando il pattern Observe di CoAP"""
-    
+    """
+        Implementa OBSERVE di CoAP:
+        1. Si registra per osservare la risorsa /vitals del sensore
+        2. Riceve notifiche push ogni volta che ci sono nuovi dati
+        3. In caso di disconnessione, tenta automaticamente la riconnessione
+    """
     while True:
-        print(f"Avvio/Ripristino sottoscrizione OBSERVE per {sensor_name} ({sensor_ip})...")
+        print(f"Gestisco sottoscrizione OBSERVE per {sensor_name} ({sensor_ip})...")
         
         try:
             context = await Context.create_client_context()
@@ -137,21 +133,18 @@ async def observe_sensor(sensor_ip, sensor_name):
             print(f"\nMonitoraggio Observe interrotto volontariamente per {sensor_name}.")
             break
         except Exception as e:
-            print(f"\n[❌ ERRORE DI RETE] Impossibile raggiungere {sensor_name}: {e}")
+            print(f"\n Impossibile raggiungere {sensor_name}: {e}")
             
         print("--- Ritento la connessione tra 5 secondi... ---")
         await asyncio.sleep(5)
 
 
-# ==========================================
-# 4. MAIN LOOP ASINCRONO
-# ==========================================
+
 async def main():
-    print("Avvio Smart Health Cloud Application (CoAP Observe Mode)...")
-    print("Sviluppato in conformità con i requisiti del corso IoT 2026")
-    print("In ascolto asincrono delle notifiche dei sensori... (Premi Ctrl+C per uscire)\n")
+    print("Avvio Smart Health Cloud Application...")
     
-    task_s1 = asyncio.create_task(observe_sensor(SENSOR_1_IP, "Sensore_1"))
+    # creo un task asincrono per osservare il dongle
+    task_s1 = asyncio.create_task(observe_sensor(SENSOR_1_IP, "Sensori"))
     
     try:
         await asyncio.gather(task_s1)
@@ -162,7 +155,7 @@ async def main():
 
 if __name__ == '__main__':
     try:
-        asyncio.run(main())
+        asyncio.run(main()) #avvio loop asincrono 
     except KeyboardInterrupt:
         pass
     finally:
