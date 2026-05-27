@@ -28,23 +28,24 @@ SmartHealth/
 │   │   └── db_setup.sql             # Schema database
 │   ├── nodes_configuration.json     # Configurazione sensori
 │   └── requirements.txt
-├── IoT_Nodes/
+├── IoT_Nodes/                     
 │   ├── sensor_nodes/               
-│   │   ├── Makefile
-│   │   ├── project_configuration.h
-│   │   ├── res_vitals.c
-│   │   ├── res_sampling.c
-│   │   ├── vitals_classifier.h
-│   │   └── sensor.c
-│   └── actuator_nodes/             
-│   │   ├── Makefile
-│   │   ├── project_configuration.h
-│   │   ├── res_treshold.c
-│   │   └── actuator.c
-├── Machine_Learning/
-│   ├── ML_model.ipynb               # Training classificatore
+│   │   ├── Makefile                # Script per la compilazione 
+│   │   ├── project_configuration.h # File di configurazione 
+│   │   ├── res_vitals.c            # Implementazione della risorsa CoAP /vitals per l'esposizione dei dati biologici
+│   │   ├── res_sampling.c          # Risorsa CoAP dedicata alla gestione dinamica del rate
+│   │   ├── vitals_classifier.h     # Header file C contenente il modello Random Forest  
+│   │   └── sensor.c                # Codice principale sensore e gestione stress test 
+│   └── actuator_nodes/            
+│       ├── Makefile                # Script di compilazione 
+│       ├── project_configuration.h # Direttive di configurazione 
+│       ├── res_treshold.c          # Gestione della risorsa CoAP /threshold per il controllo cromatico dei LED 
+│       └── actuator.c              # Codice principale a gestione dell'attuatore in Cooja 
+├── Machine_Learning/               
+│   ├── health-status-dataset.csv 
+│   └── ML_model.ipynb
 │   └── dataset/
-│       └── smart_health_dataset.csv
+│       └── smart_health_dataset.csv   # Dataset open-source estratto da Kaggle per l'addestramento 
 ├── SimulazioneCooja/                # File simulazione Cooja
 └── Documentation/
 ```
