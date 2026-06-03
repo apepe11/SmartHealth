@@ -181,7 +181,9 @@ ACTUATOR_IP = "fd00::f6ce:36a6:c68f:cb04"
 ```
 
 ## Accuratezza modello ML 
-'''
+## 🧠 Accuratezza modello ML (TinyML)
+
+```text
 --- REPORT DI ACCURATEZZA TINYML ---
               precision    recall  f1-score   support
 
@@ -192,7 +194,7 @@ ACTUATOR_IP = "fd00::f6ce:36a6:c68f:cb04"
     accuracy                           0.96      1182
    macro avg       0.97      0.97      0.97      1182
 weighted avg       0.96      0.96      0.96      1182
-'''
+
 
 ## 📦 Note Importanti
 
