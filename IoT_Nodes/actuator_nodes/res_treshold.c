@@ -9,7 +9,6 @@
 
 
 extern int alarm_threshold;
-extern int current_risk;
 extern void update_leds(void);
 
 

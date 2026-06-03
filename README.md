@@ -1,54 +1,52 @@
 # SmartHealth IoT - Cloud Application
 
-Un sistema di **monitoraggio della salute** con IoT, machine learning e cloud computing.
+Un sistema di **monitoraggio della salute** con IoT, machine learning e cloud computing, implementato interamente su dispositivi hardware reali (Edge Computing).
 
 ## 📋 Panoramica del Progetto
 
 SmartHealth è una piattaforma IoT completa che integra:
 
-- 🌡️ **Sensori IoT (Contiki-NG su NRF52840)** per frequenza cardiaca, SpO₂ e rischio clinico
-- 🚨 **Attuatore IoT** per gestione allarmi via CoAP
-- ☁️ **Cloud Backend Python** per acquisizione dati e storage su MySQL
-- 📊 **Dashboard Tkinter** per visualizzazione real-time
-- 🤖 **Machine Learning** per classificazione del rischio clinico
+- 🌡️ **Sensori IoT (Contiki-NG su nRF52840 Dongle)** per frequenza cardiaca, SpO₂ e temperatura.
+- 🚨 **Attuatore IoT (nRF52840 Dongle)** come server CoAP puro per gestione allarmi visivi (LED RGB).
+- ☁️ **Cloud Backend Python** per acquisizione dati (CoAP Observe), storage su MySQL e logica Closed-Loop.
+- 📊 **Dashboard Tkinter** per visualizzazione real-time.
+- 🤖 **Machine Learning (TinyML)** per la classificazione del rischio clinico eseguita direttamente sul nodo sensore (Random Forest via `emlearn`).
 
 ## 🗂️ Struttura del Progetto
 
-```
+```text
 SmartHealth/
 ├── Cloud_Application/
-│   ├── SmartHealthCloud.py          # Backend (polling CoAP + MySQL)
+│   ├── SmartHealthCloud.py          # Backend (Observe CoAP + MySQL + Closed-Loop su Attuatore)
 │   ├── frontend/
 │   │   ├── SmartHealthUI.py         # Frontend (dashboard Tkinter)
 │   │   ├── coap_service.py          # Servizio lettura DB
 │   │   ├── view_components.py       # Componenti UI
-│   │   └── configuration_manager.py # Config database
+│   │   └── configuration_manager.py # Config database e gestione statica IP nodi
 │   ├── backend/
 │   │   ├── db_manager.py            # Gestore DB
 │   │   └── db_setup.sql             # Schema database
-│   ├── nodes_configuration.json     # Configurazione sensori
 │   └── requirements.txt
 ├── IoT_Nodes/                     
 │   ├── sensor_nodes/               
-│   │   ├── Makefile                # Script per la compilazione 
-│   │   ├── project_configuration.h # File di configurazione 
-│   │   ├── res_vitals.c            # Implementazione della risorsa CoAP /vitals per l'esposizione dei dati biologici
+│   │   ├── Makefile                # Script per la compilazione (target nrf52840)
+│   │   ├── project_configuration.h # File di configurazione radio/canale
+│   │   ├── res_vitals.c            # Implementazione risorsa CoAP /vitals (dati biologici)
 │   │   ├── res_sampling.c          # Risorsa CoAP dedicata alla gestione dinamica del rate
-│   │   ├── vitals_classifier.h     # Header file C contenente il modello Random Forest  
-│   │   └── sensor.c                # Codice principale sensore e gestione stress test 
+│   │   ├── vitals_classifier.h     # Header file C contenente il modello Random Forest generato 
+│   │   └── sensor.c                # Codice principale sensore, ML e gestione stress test hardware
 │   └── actuator_nodes/            
-│       ├── Makefile                # Script di compilazione 
-│       ├── project_configuration.h # Direttive di configurazione 
-│       ├── res_treshold.c          # Gestione della risorsa CoAP /threshold per il controllo cromatico dei LED 
-│       └── actuator.c              # Codice principale a gestione dell'attuatore in Cooja 
+│       ├── Makefile                # Script per la compilazione (target nrf52840)
+│       ├── project_configuration.h # Direttive di configurazione radio/canale
+│       ├── res_treshold.c          # Gestione risorsa CoAP /threshold
+│       └── actuator.c              # Codice principale server CoAP per il controllo cromatico dei LED
 ├── Machine_Learning/               
-│   ├── health-status-dataset.csv 
-│   └── ML_model.ipynb
+│   ├── ML_model.ipynb              # Notebook Colab di training del modello
 │   └── dataset/
-│       └── smart_health_dataset.csv   # Dataset open-source estratto da Kaggle per l'addestramento 
-├── SimulazioneCooja/                # File simulazione Cooja
-└── Documentation/
+│       └── smart_health_dataset.csv   # Dataset open-source estratto da Kaggle
+└── Documentation/                  # Relazione e diagrammi architetturali
 ```
+
 
 ## ⚙️ Setup Iniziale
 
@@ -97,11 +95,14 @@ Questo crea:
 
 Il sistema richiede l'avvio sequenziale di più componenti. Segui i passi nell'ordine indicato.
 
-### Passo 1️⃣ — Collegare i Dongle Fisici
+### Passo 1 — Collegare i Dongle Fisici
 
-Collega i dongle NRF52840 alle porte USB del PC. Verifica che siano riconosciuti dal sistema (es. `/dev/ttyACM0`, `/dev/ttyACM1`, ...). I dongle fisici devono essere flashati con sensor.c e border-router.c.
+Collega i dongle NRF52840 alle porte USB del PC. Verifica che siano riconosciuti dal sistema (es. `/dev/ttyACM0`, `/dev/ttyACM1`, ...). I dongle fisici devono essere flashati con sensor.c , actuator.c e border-router.c. con (es. con attuatore):
+```bash
+make TARGET=nrf52840 BOARD=dongle actuator.dfu-upload PORT=/dev/ttyACMx
+```
 
-### Passo 2️⃣ — Avviare il Border Router sul Dongle
+### Passo 2 — Avviare il Border Router sul Dongle
 
 Dalla cartella del border router, flasha e connetti il dongle come router di confine IPv6:
 
@@ -112,34 +113,15 @@ make TARGET=nrf52840 BOARD=dongle connect-router PORT=/dev/ttyACM0
 (l'ultimo parametro dipende dal tipo di pc).
 Questo configura il dongle come border router RPL e rende raggiungibile la rete dei nodi IoT.
 
-Se connettiamo anche il sensore precedentemente flashato, si creerà da DODAG.
+Se connettiamo anche il sensore e l'attuatore precedentemente flashato, si creerà la DODAG.
 
-### Passo 3️⃣ — Avviare Cooja e Caricare la Simulazione
 
-```bash
-cd contiki-ng/tools/cooja
-./gradlew run
-```
-Apri il simulatore **Cooja** e carica il file di simulazione presente nella cartella `SimulazioneCooja/`. Seleziona il file `.csc` dalla finestra di apertura di Cooja.
+### Passo 3 — Collegare gli altri due dongle
 
-### Passo 4️⃣ — Avviare la Simulazione in Cooja
 
-Una volta caricata la simulazione, premi **Start** in Cooja per avviare i nodi virtuali (sensori e attuatore).
+### Passo 4 — Attivare il Virtual Environment
 
-### Passo 5️⃣ — Avviare il Tunnel IPv6 (tunslip6)
-
-Nella simulazione Cooja, per il motes 1 (il Border Router ), clicca su start e poi fai partire la simulazione. In un terminale dedicato, avvia il tunnel IPv6 tra il PC e la rete Cooja tramite `tunslip6`:
-
-```bash
-cd /contiki-ng/tools/serial-io
-sudo ./tunslip6 -a 127.0.0.1 -p 60001 fd01::1/64 -t tun1
-```
-
-Tieni questo terminale ed anche tutti i terminali aperti fin'ora per tutta la durata del sistema. Il tunnel permette al backend Python di comunicare via CoAP con i nodi della simulazione.
-
-### Passo 6️⃣ — Attivare il Virtual Environment
-
-Apri un nuovo terminale,  attiva il virtual environment e spostati nella cartella `Cloud_Application`:
+Apri un nuovo terminale, attiva il virtual environment e spostati nella cartella `Cloud_Application`:
 
 ```bash
 source venv/bin/activate
@@ -151,22 +133,22 @@ Il prompt dovrebbe diventare simile a:
 (venv) [user@host Cloud_Application]$
 ```
 
-### Passo 7️⃣ — Avviare il Backend Cloud
+### Passo 6 — Avviare il Backend Cloud
 
 ```bash
 python SmartHealthCloud.py
 ```
 **Output atteso**:
 ```
-Avvio Smart Health Cloud Application (Polling Sensore)...
-In ascolto tramite Polling periodico... (Premi Ctrl+C per uscire)
-[DATO DAL SENSORE Sensore_1]: {...}
-[✓] Dati salvati! (Sensore: Sensore_1 | HR: 75, SpO2: 98, Risk: 0.15)
+[NOTIFICA DA Sensori]: {"hr": 97, "body_temperature": 40, "spo2": 90, "risk": 2}
+ 💾 DB Aggiornato -> Sensore: Sensori | HR: 97, Temp: 40, SpO2: 90, Rischio: 2
+ 🚨 EMERGENZA (Rischio 2) rilevata su Sensori! Attivo LED ROSSO su fd00::f6ce:36a6:c68f:cb04...
+ 🟢 Attuatore aggiornato con successo! (Risposta CoAP: 2.04 Changed)
 ```
 
 ### Passo 8️⃣ — Avviare il Frontend Dashboard
 
-Apri un ulteriore terminale, attiva l'ambiente venv , spostati nella cartella `frontend`  e avvia la dashboard:
+Apri un ulteriore terminale, attiva l'ambiente venv , spostati nella cartella `CloudApplication/frontend`  e avvia la dashboard:
 
 ```bash
 source venv/bin/activate
@@ -195,11 +177,11 @@ Modifica gli IP dei sensori in `Cloud_Application/SmartHealthCloud.py`:
 
 ```python
 SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"   
-ACTUATOR_IP = "fd01::202:2:2:2"
+ACTUATOR_IP = "fd00::f6ce:36a6:c68f:cb04"
 ```
 
 ## Accuratezza modello ML 
-
+'''
 --- REPORT DI ACCURATEZZA TINYML ---
               precision    recall  f1-score   support
 
@@ -210,11 +192,9 @@ ACTUATOR_IP = "fd01::202:2:2:2"
     accuracy                           0.96      1182
    macro avg       0.97      0.97      0.97      1182
 weighted avg       0.96      0.96      0.96      1182
-
+'''
 
 ## 📦 Note Importanti
 
-- In cooja vengono simulati un LBR e un attuatore. Dal punto di vista dell'hardware abbiamo anche qui un LBR ed un sensore
-- Il border router fisico (dongle NRF52840) deve essere collegato **prima** di avviare Cooja
 - Il database persiste tra avvii (usa `DROP DATABASE SmartHealthIoT;` per resettare)
 - La password di default non dovrebbe essere usata in produzione
