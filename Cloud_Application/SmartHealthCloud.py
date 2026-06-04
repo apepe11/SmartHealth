@@ -1,46 +1,24 @@
 import asyncio
 import json
-import mysql.connector
 from aiocoap import *
 
-# Importo le configurazioni dal file esterno situato nella cartella frontend
+
 from frontend.configuration_manager import DB_CONFIG, SENSORS_CONFIG
+from frontend.db_manager import DBManager 
 
-# Classe per gestire la connessione con il db MySQL 
-class MySQL:
-    def __init__(self):
-        # Utilizzo i valori presi da DB_CONFIG
-        self.host = DB_CONFIG["host"]
-        self.user = DB_CONFIG["user"]          
-        self.password = DB_CONFIG["password"]  
-        self.database = DB_CONFIG["database"]  
-        
-        self.connection = mysql.connector.connect(
-            host=self.host, user=self.user, password=self.password, database=self.database 
-        )
-        if not self.connection.is_connected():
-            raise Exception("Connessione MySQL fallita")
-        
-    def query(self, query_text, query_values=None):
-        try:
-            cursor = self.connection.cursor(buffered=True) 
-            cursor.execute(query_text, query_values)
-            self.connection.commit()
-            cursor.close() 
-            return True
-        except mysql.connector.Error as err:
-            print("Errore MySQL: ", err)
-            return False 
-    
-    def close(self):
-        self.connection.close()
 
-db = MySQL()
+# prendo id dei sensori 
+active_sensor_ids = [config["id"] for config in SENSORS_CONFIG.values()]
+
+db = DBManager(
+    host=DB_CONFIG["host"],
+    user=DB_CONFIG["user"],
+    database=DB_CONFIG["database"],
+    active_sensors=active_sensor_ids
+)
 
 async def update_actuator(sensor_name, new_risk_level):
     """Invia il comando CoAP PUT all'attuatore fisico per aggiornare i LED"""
-    
-    # Recupero l'IP dell'attuatore associato a questo sensore dal file di configurazione
     actuator_ip = SENSORS_CONFIG[sensor_name]["actuator_ip"]
     
     if new_risk_level == 2:
@@ -52,8 +30,6 @@ async def update_actuator(sensor_name, new_risk_level):
 
     try:
         context = await Context.create_client_context()
-        
-        # Preparo il payload JSON per l'attuatore
         payload_data = {"new_t": new_risk_level} 
         payload_bytes = json.dumps(payload_data).encode('utf-8')
         
@@ -71,8 +47,7 @@ async def update_actuator(sensor_name, new_risk_level):
         print(f" 🔴 Impossibile contattare l'attuatore: {e}")
 
 def handle_incoming_data(payload_text, sensor_name):
-    """Esegue il parsing dei dati, salva su DB e innesca la logica Closed-Loop"""
-    
+    """Esegue il parsing dei dati, salva su DB usando DBManager e gestisce il Closed-Loop"""
     try:
         data = json.loads(payload_text)
         hr = int(data.get('hr', 0))
@@ -80,17 +55,31 @@ def handle_incoming_data(payload_text, sensor_name):
         spo2 = int(data.get('spo2', 0))
         risk_score = int(data.get('risk', 0))
         
-        # Recupero l'ID del sensore dal file di configurazione
+        # Se nel payload è presente il sampling rate corrente inviato dal sensore (es. 'sr'), 
+        # aggiornalo nel db manager per il calcolo del timeout dinamico
         sensor_id = SENSORS_CONFIG[sensor_name]["id"]
+        if 'sr' in data:
+            db.update_sampling_rate(sensor_id, int(data['sr']))
+        else:
+            # Imposta un valore di default (es. 5 secondi) se non pervenuto nel JSON
+            if sensor_id not in db.sampling_rates:
+                db.update_sampling_rate(sensor_id, 5)
         
-        # Salva nel database
-        query = "INSERT INTO Health_Measurements (sensor_id, heart_rate, body_temperature, spo2, risk_score) VALUES (%s, %s, %s, %s, %s)"
-        success = db.query(query, (sensor_id, hr, body_temperature, spo2, risk_score))
-        
-        if success:
-            print(f" 💾 DB Aggiornato -> Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Rischio: {risk_score}")
+        # Connessione e scrittura sul DB sfruttando DBManager
+        if db.connect():
+            try:
+                cursor = db.connection.cursor()
+                query = """
+                    INSERT INTO Health_Measurements (sensor_id, heart_rate, body_temperature, spo2, risk_score, timestamp, status) 
+                    VALUES (%s, %s, %s, %s, %s, NOW(), 'ONLINE')
+                """
+                cursor.execute(query, (sensor_id, hr, body_temperature, spo2, risk_score))
+                cursor.close()
+                print(f" 💾 DB Aggiornato tramite DBManager -> Sensore: {sensor_name} | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}, Rischio: {risk_score}")
+            except Exception as sql_err:
+                print(f" ❌ Errore durante l'inserimento SQL: {sql_err}")
             
-        # ⚠️ CLOSED-LOOP ATTIVO: Invia il comando all'attuatore a OGNI lettura.
+        # CLOSED-LOOP ATTIVO
         asyncio.create_task(update_actuator(sensor_name, risk_score))
             
     except Exception as e:
@@ -100,11 +89,8 @@ async def observe_sensor(sensor_ip, sensor_name):
     """Sottoscrizione CoAP Observe verso il sensore fisico"""
     while True:
         print(f"\n⏳ Avvio sottoscrizione OBSERVE per {sensor_name} ({sensor_ip})...")
-        
         try:
             context = await Context.create_client_context()
-            
-            # Porta esplicita per evitare conflitti di routing
             request = Message(code=GET, uri=f"coap://[{sensor_ip}]:5683/vitals", observe=0)
             protocol_request = context.request(request)
             
@@ -130,7 +116,6 @@ async def observe_sensor(sensor_ip, sensor_name):
 async def main():
     print("🚀 Avvio Smart Health Cloud Application...")
     
-    # Creazione dinamica dei task in base a quanti sensori ci sono in SENSORS_CONFIG
     tasks = []
     for sensor_name, config in SENSORS_CONFIG.items():
         sensor_ip = config["sensor_ip"]
