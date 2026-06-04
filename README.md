@@ -48,9 +48,39 @@ SmartHealth/
 ```
 
 
-## ⚙️ Setup Iniziale
+## ⚙️ Setup Iniziale (Guida per Ubuntu/Linux)
 
-### 1️⃣ Creare l'Ambiente Virtuale Python
+I seguenti passaggi illustrano come configurare l'ambiente da zero, installando i requisiti di sistema, il database locale e l'ambiente virtuale Python.
+
+### 1 Installare i Prerequisiti di Sistema e attivazione MySQL
+Per prima cosa, aggiorna i repository e installa Python, l'ambiente virtuale, la libreria grafica nativa per l'interfaccia (Tkinter) e il server MySQL:
+
+```bash
+sudo apt update
+sudo apt install -y python3-venv python3-pip python3-tk mysql-server mysql-client
+
+sudo systemctl start mysql
+sudo systemctl enable mysql
+```
+### 2 Configurare il Database MySQL
+
+Crea il database.
+```bash
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '1'; FLUSH PRIVILEGES;"
+
+cd Cloud_Application
+mysql -u root -p1 < db_setup.sql
+
+```
+**Credenziali di default**:
+- User: `root`
+- Password: `1`
+- Database: `SmartHealthIoT`
+
+> 💡 Se usi una password diversa, modifica `frontend/configuration_manager.py`
+
+### 3 Creare l'Ambiente Virtuale Python
+
 
 ```bash
 cd Cloud_Application
@@ -62,34 +92,10 @@ source venv/bin/activate  # Linux/Mac
 ### 2️⃣ Installare le Dipendenze
 
 ```bash
+pip install --upgrade pip
 pip install -r requirements.txt
+
 ```
-
-Le dipendenze includono:
-- `mysql-connector-python`: Connessione al database MySQL
-- `rich`: Output formattato in terminale
-- `pandas`, `scikit-learn`: ML e data processing
-- `emlearn`: Embedding ML per microcontroller
-
-### 3️⃣ Configurare il Database MySQL
-
-Prima assicurati che MySQL sia in esecuzione, poi:
-
-```bash
-cd Cloud_Application
-mysql -u root -p1 < db_setup.sql
-```
-
-Questo crea:
-- **Database**: `SmartHealthIoT`
-- **Tabella**: `Health_Measurements` (sensor_id, heart_rate, spo2, risk_score, timestamp)
-
-**Credenziali di default**:
-- User: `root`
-- Password: `1`
-- Database: `SmartHealthIoT`
-
-> 💡 Se usi una password diversa, modifica `frontend/configuration_manager.py`
 
 ## 🚀 Avvio del Sistema (Hardware Reale + Cooja)
 
@@ -199,4 +205,4 @@ weighted avg       0.96      0.96      0.96      1182
 ## 📦 Note Importanti
 
 - Il database persiste tra avvii (usa `DROP DATABASE SmartHealthIoT;` per resettare)
-- La password di default non dovrebbe essere usata in produzione
+- La password di default è 1

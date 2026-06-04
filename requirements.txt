@@ -3,3 +3,5 @@ rich==13.5.2
 pandas==3.0.3
 scikit-learn==1.8.0
 emlearn==0.23.2
+aiocoap==0.4.8
+LinkHeader==0.4.3
