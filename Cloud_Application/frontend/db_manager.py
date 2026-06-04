@@ -1,20 +1,21 @@
 import mysql.connector
 from mysql.connector import Error
 from datetime import datetime, timedelta
+from configuration_manager import DB_CONFIG 
 
 class DBManager:
-    def __init__(self, host="localhost", user="root", database="SmartHealthIoT", active_sensors=None):
+    def __init__(self, host=None, user=None, database=None, active_sensors=None):
+        # Se non passati esplicitamente, usa i valori del file di configurazione statico
         self.config = {
-            'host': host,
-            'user': user,
-            'password': "1",
-            'database': database
+            'host': host or DB_CONFIG["host"],
+            'user': user or DB_CONFIG["user"],
+            'password': DB_CONFIG["password"],
+            'database': database or DB_CONFIG["database"]
         }
         self.connection = None
-        self.min_timeout = 10  # timeout per sensore in assenza di dati
-        self.sampling_rates = {}  # memorizza i sampling rate per sensore
-        # lista dei sensori attivi (se None, prendi tutti)
-        self.active_sensors = active_sensors or [1] 
+        self.min_timeout = 10  
+        self.sampling_rates = {}  
+        self.active_sensors = active_sensors or [1]
 
     def connect(self):
         try:
