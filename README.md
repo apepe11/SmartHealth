@@ -186,7 +186,6 @@ SENSOR_1_IP = "fd00::f6ce:36b9:a760:ecea"
 ACTUATOR_IP = "fd00::f6ce:36a6:c68f:cb04"
 ```
 
-## Accuratezza modello ML 
 ## 🧠 Accuratezza modello ML (TinyML)
 
 ```text
