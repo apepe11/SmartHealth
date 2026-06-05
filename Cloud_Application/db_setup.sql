@@ -14,3 +14,7 @@ CREATE TABLE IF NOT EXISTS Health_Measurements (
     -- indicie per velocizzare le query di Grafana e della UI sui dati più recenti
     INDEX idx_sensor_timestamp (sensor_id, timestamp DESC)
 );
+
+CREATE USER IF NOT EXISTS 'smarthealth'@'localhost' IDENTIFIED BY '1';
+GRANT ALL PRIVILEGES ON SmartHealthIoT.* TO 'smarthealth'@'localhost';
+FLUSH PRIVILEGES;

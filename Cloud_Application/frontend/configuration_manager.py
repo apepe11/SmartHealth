@@ -2,7 +2,8 @@
 
 DB_CONFIG = { # configurazioni per connessione al DB
     "host": "localhost",
-    "user": "root",
+    # Use a dedicated DB user for the application instead of root
+    "user": "smarthealth",
     "password": "1",
     "database": "SmartHealthIoT"
 }
