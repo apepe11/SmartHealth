@@ -1,9 +1,15 @@
 import tkinter as tk
 from tkinter import ttk
-from db_manager import DBManager 
-from coap_service import CoAPNetworkService
-from view_components import SensorCard
-from configuration_manager import SENSORS_CONFIG
+try:
+    from .db_manager import DBManager
+    from .coap_service import CoAPNetworkService
+    from .view_components import SensorCard
+    from .configuration_manager import SENSORS_CONFIG
+except Exception:
+    from db_manager import DBManager
+    from coap_service import CoAPNetworkService
+    from view_components import SensorCard
+    from configuration_manager import SENSORS_CONFIG
 
 class SmartHealthApp:
     def __init__(self, root):

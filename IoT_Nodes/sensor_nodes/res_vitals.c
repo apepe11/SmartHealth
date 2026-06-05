@@ -9,7 +9,7 @@ extern int current_temp;
 extern int current_risk;
 
 
-//funziona per ottenere i paramentri del paziente 
+
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
 // risorsa per i dati del paziente
@@ -21,6 +21,8 @@ EVENT_RESOURCE(res_vitals,
          NULL,
          NULL);
 
+
+//funziona per ottenere i paramentri del paziente 
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset) {
     
     //crea payload in formanto JSON con i parametri 

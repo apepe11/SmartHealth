@@ -12,10 +12,7 @@ extern int alarm_threshold;
 extern void update_leds(void);
 
 
-//definizione risorse 
-//legge valore corrente soglia 
 static void threshold_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
-//modifica valore soglia 
 static void threshold_put_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
 //creo macro per risorsa soglia 

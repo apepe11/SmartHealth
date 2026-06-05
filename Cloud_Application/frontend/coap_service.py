@@ -11,15 +11,11 @@ active_ids = [cfg["id"] for cfg in SENSORS_CONFIG.values()]
 db_shared = DBManager(active_sensors=active_ids)
 
 class DataService:
-    """Eredita le funzioni dal db_manager per mantenere la consistenza dello stato"""
     def get_latest_measurements(self):
-        # Sfrutta il calcolo del timeout dinamico scritto nel DBManager
         return db_shared.fetch_latest_measurements()
 
 
-class CoAPNetworkService:
-    """Gestisce l'invio dei comandi di configurazione ai nodi"""
-    
+class CoAPNetworkService:  
     def _run_async_put(self, ip, resource, payload):
         async def put_task():
             try:
@@ -37,11 +33,10 @@ class CoAPNetworkService:
         asyncio.run(put_task())
 
     def send_new_sampling_rate(self, sensor_ip, new_rate):
-        """Invia il nuovo sampling rate al sensore e aggiorna il manager locale"""
         payload = {"new_sr": int(new_rate)}
         print(f" Invio nuovo sampling rate ({new_rate}s) a {sensor_ip}...")
         
-        # Cerca l'ID corrispondente all'IP per aggiornare il local storage del timeout
+        # cerco l'ID corrispondente all'IP per aggiornare il local storage del timeout
         for s_name, cfg in SENSORS_CONFIG.items():
             if cfg["sensor_ip"] == sensor_ip:
                 db_shared.update_sampling_rate(cfg["id"], int(new_rate))

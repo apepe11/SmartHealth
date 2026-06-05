@@ -47,7 +47,6 @@ async def update_actuator(sensor_name, new_risk_level):
         print(f" 🔴 Impossibile contattare l'attuatore: {e}")
 
 def handle_incoming_data(payload_text, sensor_name):
-    """Esegue il parsing dei dati, salva su DB usando DBManager e gestisce il Closed-Loop"""
     try:
         data = json.loads(payload_text)
         hr = int(data.get('hr', 0))
@@ -55,13 +54,12 @@ def handle_incoming_data(payload_text, sensor_name):
         spo2 = int(data.get('spo2', 0))
         risk_score = int(data.get('risk', 0))
         
-        # Se nel payload è presente il sampling rate corrente inviato dal sensore (es. 'sr'), 
-        # aggiornalo nel db manager per il calcolo del timeout dinamico
+
         sensor_id = SENSORS_CONFIG[sensor_name]["id"]
         if 'sr' in data:
             db.update_sampling_rate(sensor_id, int(data['sr']))
         else:
-            # Imposta un valore di default (es. 5 secondi) se non pervenuto nel JSON
+
             if sensor_id not in db.sampling_rates:
                 db.update_sampling_rate(sensor_id, 5)
         
@@ -79,14 +77,12 @@ def handle_incoming_data(payload_text, sensor_name):
             except Exception as sql_err:
                 print(f" ❌ Errore durante l'inserimento SQL: {sql_err}")
             
-        # CLOSED-LOOP ATTIVO
         asyncio.create_task(update_actuator(sensor_name, risk_score))
             
     except Exception as e:
         print(f" ❌ Errore nel parsing dei dati da {sensor_name}: {e}")
 
 async def observe_sensor(sensor_ip, sensor_name):
-    """Sottoscrizione CoAP Observe verso il sensore fisico"""
     while True:
         print(f"\n⏳ Avvio sottoscrizione OBSERVE per {sensor_name} ({sensor_ip})...")
         try:
@@ -114,7 +110,7 @@ async def observe_sensor(sensor_ip, sensor_name):
         await asyncio.sleep(5)
 
 async def main():
-    print("🚀 Avvio Smart Health Cloud Application...")
+    print("Avvio Smart Health Cloud...")
     
     tasks = []
     for sensor_name, config in SENSORS_CONFIG.items():
@@ -136,4 +132,4 @@ if __name__ == '__main__':
         pass
     finally:
         db.close()
-        print("✅ Uscita completata.")
+        print("Uscita completata.")
