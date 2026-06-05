@@ -21,7 +21,7 @@ extern coap_resource_t res_sampling;
 // parametri vitali inizializzati
 int current_hr = 90;      
 int current_spo2 = 98;    
-int current_temp = 37; 
+int current_temp = 35; 
 int current_risk = 0;
 
 // Rate attuale + variabile per il meccanismo adattivo

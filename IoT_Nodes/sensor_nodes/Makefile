@@ -20,6 +20,6 @@ CFLAGS += -Wno-error=discarded-qualifiers
 # --------------------------------------------------------------------
 # 6. Percorso assoluto di Contiki-NG sul tuo sistema Arch Linux
 # --------------------------------------------------------------------
-CONTIKI = /home/antoniio/Scrivania/contiki-ng
+CONTIKI = /home/antonio/contiki-ng
 
 include $(CONTIKI)/Makefile.include

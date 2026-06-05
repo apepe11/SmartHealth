@@ -17,5 +17,5 @@ CFLAGS += -Wno-error=discarded-qualifiers
 CFLAGS += -Wno-error=implicit-function-declaration
 CFLAGS += -Wno-error=unused-but-set-variable
 
-CONTIKI = /home/antoniio/Scrivania/contiki-ng
+CONTIKI = /home/antonio/contiki-ng
 include $(CONTIKI)/Makefile.include
