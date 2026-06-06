@@ -1,4 +1,3 @@
-# coap_service.py
 import asyncio
 import json
 import threading
@@ -6,7 +5,6 @@ from aiocoap import *
 from configuration_manager import DB_CONFIG, SENSORS_CONFIG
 from db_manager import DBManager
 
-# Estraiamo gli ID dei sensori attivi per il DBManager
 active_ids = [cfg["id"] for cfg in SENSORS_CONFIG.values()]
 db_shared = DBManager(active_sensors=active_ids)
 

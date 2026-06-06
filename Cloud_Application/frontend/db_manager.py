@@ -121,7 +121,6 @@ class DBManager:
             for sensor_id in self.active_sensors:
                 sensor_in_results = any(r.get("sensor_id") == sensor_id for r in results)
                 if not sensor_in_results:
-                    # Nessun record trovato per questo sensore - è da considerare MISSING
                     self.insert_missing_record(sensor_id, self.min_timeout, 5)
                     # creo un record fittizio da restituire
                     results.append({
