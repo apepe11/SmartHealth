@@ -38,13 +38,13 @@ PROCESS_THREAD(smart_health_node, ev, data) {
 
     PROCESS_BEGIN();
 
-    LOG_INFO("Inizializzazione Nodo Smart Health con ML...\n");
+    LOG_INFO("Initializing Smart Health Node with ML...\n");
     
     // attivo risorse CoAP per vitals e sampling
     coap_activate_resource(&res_vitals, "vitals");
     coap_activate_resource(&res_sampling, "sampling");
     
-    LOG_INFO("Risorse CoAP attivate: /vitals e /sampling\n");
+    LOG_INFO("CoAP resources activated: /vitals and /sampling\n");
 
     etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
 
@@ -61,7 +61,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             if(current_temp < 36) current_temp = 36;
             if(current_temp > 40) current_temp = 40;
             #else
-           
+            
 
             int target_temp = leggi_temperatura_hardware_nrf();
 
@@ -102,7 +102,7 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             current_risk = (int)vitals_rf_model_predict(ml_features, 3);
 
             LOG_INFO("Temp: %d C | HR: %d bpm | SpO2: %d%%\n", current_temp, current_hr, current_spo2);
-            LOG_INFO("Esito Random Forest (Risk): %d\n", current_risk);
+            LOG_INFO("Random Forest Outcome (Risk): %d\n", current_risk);
             
             // notifica paramenti al Cloud tramite CoAP
             coap_notify_observers(&res_vitals);
@@ -110,16 +110,16 @@ PROCESS_THREAD(smart_health_node, ev, data) {
             etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
         }
         
-        // mecanismo adattivo manuale tramite pressione del bottone
+        // meccanismo adattivo manuale tramite pressione del bottone
         if(ev == button_hal_press_event) {
             is_network_congested = !is_network_congested;
             
             if(is_network_congested) {
-                LOG_INFO("STRESS TEST. Attivazione Meccanismo Adattivo (Rate = 20s)...\n");
+                LOG_INFO("STRESS TEST. Activating Adaptive Mechanism (Rate = 20s)...\n");
                 current_sampling_rate = 20; 
                 etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
             } else {
-                LOG_INFO("Rete tornata stabile. Disattivazione Meccanismo Adattivo (Rate = 5s).\n");
+                LOG_INFO("Network stable again. Deactivating Adaptive Mechanism (Rate = 5s).\n");
                 current_sampling_rate = 5; 
                 etimer_set(&periodic_timer, current_sampling_rate * CLOCK_SECOND);
             }

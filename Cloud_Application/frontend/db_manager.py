@@ -27,7 +27,7 @@ class DBManager:
                 self.connection.autocommit = True
             return True
         except Error as e:
-            print(f" Connessione fallita: {e}")
+            print(f" Connection failed: {e}")
             return False
 
     def update_sampling_rate(self, sensor_id, rate_seconds):
@@ -65,10 +65,10 @@ class DBManager:
             ))
             cursor.close()
             self.last_missing_recorded[sensor_id] = now
-            print(f"   📝 Inserito record SENSOR_MISSING per sensore {sensor_id} nel DB")
+            print(f"   📝 Inserted SENSOR_MISSING record for sensor {sensor_id} in DB")
             return True
         except Error as e:
-            print(f"   ❌ Errore inserimento record MISSING: {e}")
+            print(f"   ❌ Error inserting MISSING record: {e}")
             return False
 
     def fetch_latest_measurements(self):
@@ -115,7 +115,7 @@ class DBManager:
                     else:
                         # Il sensore è tornato ONLINE dopo un missing
                         if record.get("status") == "SENSOR_MISSING":
-                            print(f" Sensor {sensor_id} tornato ONLINE dopo {(datetime.now() - last_timestamp).total_seconds():.0f}s")
+                            print(f" Sensor {sensor_id} back ONLINE after {(datetime.now() - last_timestamp).total_seconds():.0f}s")
             
             
             for sensor_id in self.active_sensors:
@@ -136,7 +136,7 @@ class DBManager:
             cursor.close()
             return results
         except Error as e:
-            print(f" Impossibile recuperare gli ultimi dati: {e}")
+            print(f" Unable to retrieve latest data: {e}")
             return []
 
     def close(self):

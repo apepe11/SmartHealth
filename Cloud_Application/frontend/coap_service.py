@@ -25,15 +25,15 @@ class CoAPNetworkService:
                 request.opt.content_format = 50 
                 
                 response = await context.request(request).response
-                print(f" PUT eseguita con successo. Risposta nodo: {response.code}")
+                print(f" PUT executed successfully. Node response: {response.code}")
             except Exception as e:
-                print(f" Impossibile inviare PUT a [{ip}]/{resource}: {e}")
+                print(f" Unable to send PUT to [{ip}]/{resource}: {e}")
         
         asyncio.run(put_task())
     # funzione per inviare la PUT all'attuatore con il nuovo threshold
     def send_new_sampling_rate(self, sensor_ip, new_rate):
         payload = {"new_sr": int(new_rate)}
-        print(f" Invio nuovo sampling rate ({new_rate}s) a {sensor_ip}...")
+        print(f" Sending new sampling rate ({new_rate}s) to {sensor_ip}...")
         
         for s_name, cfg in SENSORS_CONFIG.items():
             if cfg["sensor_ip"] == sensor_ip:

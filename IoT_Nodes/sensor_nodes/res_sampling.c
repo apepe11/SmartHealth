@@ -41,7 +41,7 @@ static void res_put_handler(coap_message_t *request, coap_message_t *response, u
                     //aggiorno rate
                     current_sampling_rate = new_rate;
                     
-                    printf("Nuovo Sampling Rate: %d sec\n", current_sampling_rate);
+                    printf("New Sampling Rate: %d sec\n", current_sampling_rate);
                     
                     coap_set_status_code(response, CHANGED_2_04);
                     return;

@@ -9,7 +9,6 @@ extern int current_temp;
 extern int current_risk;
 
 
-
 static void res_get_handler(coap_message_t *request, coap_message_t *response, uint8_t *buffer, uint16_t preferred_size, int32_t *offset);
 
 // risorsa per i dati del paziente

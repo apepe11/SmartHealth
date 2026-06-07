@@ -47,7 +47,7 @@ class SmartHealthApp:
         state_frame = ttk.Frame(actuator_section)
         state_frame.pack(padx=10, pady=15, fill="x")
         
-        self.lbl_current_threshold = ttk.Label(state_frame, text="Soglia Corrente Attuatore: N/D", font=("Arial", 11, "bold"))
+        self.lbl_current_threshold = ttk.Label(state_frame, text="Current Actuator Threshold: N/A", font=("Arial", 11, "bold"))
         self.lbl_current_threshold.pack(side="left", padx=10)
         
         self.status_bar = ttk.Label(root, text="Automatic update active (DB Polling 1s)...", font=("Arial", 9, "italic"))
@@ -92,11 +92,11 @@ class SmartHealthApp:
                     
 
                     if risk >= 2:
-                        self.lbl_current_threshold.config(text="Stato Attuatore: Soglia 2 [FORZATA AUTOMATICO - LED ROSSO]", foreground="red")
+                        self.lbl_current_threshold.config(text="Actuator State: Threshold 2 [AUTOMATIC FORCED - RED LED]", foreground="red")
                     elif risk == 1:
-                        self.lbl_current_threshold.config(text="Stato Attuatore: Soglia 1 [FORZATA AUTOMATICO - LED BLU]", foreground="blue")
+                        self.lbl_current_threshold.config(text="Actuator State: Threshold 1 [AUTOMATIC FORCED - BLUE LED]", foreground="blue")
                     else:
-                        self.lbl_current_threshold.config(text="Stato Attuatore: Soglia 0 [FORZATA AUTOMATICO - LED VERDE]", foreground="green")
+                        self.lbl_current_threshold.config(text="Actuator State: Threshold 0 [AUTOMATIC FORCED - GREEN LED]", foreground="green")
             
             found_sensors = set()
             for record in latest_records:

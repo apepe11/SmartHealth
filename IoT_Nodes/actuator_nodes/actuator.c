@@ -33,15 +33,15 @@ void update_leds_by_threshold(int risk){
     
     if(risk == 0) {
         leds_on(LEDS_GREEN);
-        LOG_INFO("VERDE - Rischio %d (Normale) | Soglia attiva: %d\n", risk, alarm_threshold);
+        LOG_INFO("GREEN - Risk %d (Normal) | Active threshold: %d\n", risk, alarm_threshold);
     }
     else if(risk == 1) {
         leds_on(LEDS_BLUE);
-        LOG_INFO("BLU - Rischio %d (Attenzione) | Soglia attiva: %d\n", risk, alarm_threshold);
+        LOG_INFO("BLUE - Risk %d (Warning) | Active threshold: %d\n", risk, alarm_threshold);
     }
     else if(risk >= 2) {
         leds_on(LEDS_RED);
-        LOG_INFO("ROSSO - Rischio %d (ALLARME EMERGENZA!) | Soglia attiva: %d\n", risk, alarm_threshold);
+        LOG_INFO("RED - Risk %d (EMERGENCY ALARM!) | Active threshold: %d\n", risk, alarm_threshold);
     }
 }
 
@@ -52,7 +52,7 @@ static void vitals_notification_handler(coap_observee_t *obs,void *notification,
     int hr, temp, spo2, risk;
 
     if(notification == NULL) {
-        printf("Timeout o errore nell'observe\n");
+        printf("Timeout or error in observation\n");
         return;
     }
 
@@ -67,13 +67,13 @@ static void vitals_notification_handler(coap_observee_t *obs,void *notification,
                   "{\"hr\": %d, \"body_temperature\": %d, \"spo2\": %d, \"risk\": %d}",
                   &hr, &temp, &spo2, &risk) == 4) {
 
-            printf("NOTIFICA RICEVUTA DAL SENSORE:\n");
-            printf("   HR=%d bpm | Temp=%d C | SpO2=%d%% | Rischio=%d\n",
+            printf("NOTIFICATION RECEIVED FROM SENSOR:\n");
+            printf("   HR=%d bpm | Temp=%d C | SpO2=%d%% | Risk=%d\n",
                    hr, temp, spo2, risk);
 
             update_leds_by_threshold(risk);
         } else {
-            LOG_WARN("Errore nel parsing del payload ricevuto: %s\n", buffer);
+            LOG_WARN("Error parsing received payload: %s\n", buffer);
         }
     }
 }
@@ -82,7 +82,7 @@ PROCESS_THREAD(actuator_node, ev, data){
     static struct etimer rpl_timer;
 
     PROCESS_BEGIN();
-    LOG_INFO("Avvio Attuatore...\n");
+    LOG_INFO("Starting Actuator...\n");
 
     leds_off(LEDS_ALL);
     leds_on(LEDS_GREEN);
@@ -90,14 +90,14 @@ PROCESS_THREAD(actuator_node, ev, data){
     etimer_set(&rpl_timer, CLOCK_SECOND * 5);
 
     while(!NETSTACK_ROUTING.node_is_reachable()) {
-        LOG_INFO("Attendo prefisso IPv6 dal Border Router...\n");
+        LOG_INFO("Waiting for IPv6 prefix from Border Router...\n");
         PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER && data == &rpl_timer);
         etimer_reset(&rpl_timer);
     }
 
-    LOG_INFO("Rete RPL connessa.\n");
+    LOG_INFO("RPL Network connected.\n");
     
-    printf("IP Locale: ");
+    printf("Local IP: ");
     LOG_INFO_6ADDR(&uip_ds6_get_global(0)->ipaddr); 
     printf("\n");
     
@@ -111,14 +111,14 @@ PROCESS_THREAD(actuator_node, ev, data){
     coap_endpoint_parse(SENSOR_IP, strlen(SENSOR_IP), &sensor_ep);
     sensor_ep.port = UIP_HTONS(COAP_DEFAULT_PORT);
 
-    printf("Avvio CoAP Client \n");
+    printf("Starting CoAP Client\n");
     
     vitals_observation = coap_obs_request_registration(&sensor_ep, "vitals", vitals_notification_handler, NULL);
 
     if(vitals_observation == NULL) {
-        printf("ERRORE: impossibile osservare il sensore!\n");
+        printf("ERROR: Unable to observe the sensor!\n");
     } else {
-        printf("Observe registrato! In attesa di notifiche dal sensore...\n");
+        printf("Observation registered! Waiting for notifications from sensor...\n");
     }
 
     while(1) {

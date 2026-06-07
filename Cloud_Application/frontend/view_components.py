@@ -237,7 +237,7 @@ class SensorCard(tk.LabelFrame):
     def update_data(self, hr, body_temp, spo2, risk, status="ONLINE"):
         """Update values and status"""
         
-        # NEW: Handle SENSOR_MISSING state
+        # Handle SENSOR_MISSING state
         if status == "SENSOR_MISSING":
             self.lbl_hr.config(text="-- bpm", fg="#999999")
             self.lbl_temp.config(text="-- °C", fg="#999999")

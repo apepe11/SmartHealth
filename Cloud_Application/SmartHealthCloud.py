@@ -28,12 +28,12 @@ async def send_threshold_to_actuator(new_threshold, sensor_name="Sensori"):
         request = Message(code=PUT, payload=payload)
         request.set_request_uri(f"coap://[{actuator_ip}]:5683/threshold")
         
-        print(f" Invio PUT /threshold. Valore: {new_threshold}")
+        print(f" Sending PUT /threshold. Value: {new_threshold}")
         response = await context.request(request).response
-        print(f" Risposta Ricevuta dall'Attuatore: {response.code}")
+        print(f" Response Received from Actuator: {response.code}")
         return response
     except Exception as e:
-        print(f" ❌ Errore durante l'invio della PUT all'attuatore: {e}")
+        print(f" ❌ Error while sending PUT to actuator: {e}")
         return None
 # funzione per gestire i dati in arrivo dai sensori, aggiornare il DB e decidere se inviare nuovi threshold
 def handle_incoming_data(payload_text, sensor_name):
@@ -61,7 +61,7 @@ def handle_incoming_data(payload_text, sensor_name):
                 """
                 cursor.execute(query, (sensor_id, hr, body_temperature, spo2, risk_score))
                 cursor.close()
-                print(f" 💾 Aggiorno DB | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}%, Rischio: {risk_score}")
+                print(f" 💾 Updating DB | HR: {hr}, Temp: {body_temperature}, SpO2: {spo2}%, Risk: {risk_score}")
                 
 
                 if risk_score >= 2:
@@ -73,20 +73,20 @@ def handle_incoming_data(payload_text, sensor_name):
 
                 if target_threshold != last_sent_threshold:
                     if target_threshold == 2:
-                        print(f" ⚠️ Rischio critico ({risk_score}).")
+                        print(f" ⚠️ Critical risk ({risk_score}).")
                     elif target_threshold == 1:
-                        print(f" 🟡 Stato di attenzione ({risk_score}).")
+                        print(f" 🟡 Warning status ({risk_score}).")
                     else:
-                        print(f" ✅ Parametri rientrati nella norma ({risk_score}).")
+                        print(f" ✅ Parameters returned to normal ({risk_score}).")
                     
                     last_sent_threshold = target_threshold
                     asyncio.create_task(send_threshold_to_actuator(target_threshold, sensor_name))
                 
             except Exception as sql_err:
-                print(f" ❌ Errore durante l'inserimento SQL: {sql_err}")
+                print(f" ❌ Error during SQL insertion: {sql_err}")
             
     except Exception as e:
-        print(f" ❌ Errore nel parsing dei dati da {sensor_name}: {e}")
+        print(f" ❌ Error parsing data from {sensor_name}: {e}")
 # funzione per osservare i dati dai sensori CoAP
 async def observe_sensor(sensor_ip, sensor_name):
     while True:
@@ -97,25 +97,25 @@ async def observe_sensor(sensor_ip, sensor_name):
             
             first_response = await protocol_request.response
             payload_text = first_response.payload.decode('utf-8')
-            print(f"\nPrimo Messaggio: {payload_text}")
+            print(f"\nFirst Message: {payload_text}")
             handle_incoming_data(payload_text, sensor_name)
             
             async for response in protocol_request.observation:
                 payload_text = response.payload.decode('utf-8')
-                print(f"\nSensore: {payload_text}")
+                print(f"\nSensor: {payload_text}")
                 handle_incoming_data(payload_text, sensor_name)
                 
         except asyncio.CancelledError:
-            print(f"\n⏹️ Monitoraggio interrotto.")
+            print(f"\n⏹️ Monitoring stopped.")
             break
         except Exception as e:
-            print(f"\n⚠️ Sensore non raggiungibile: {e}")
+            print(f"\n⚠️ Sensor not reachable: {e}")
             
-        print("🔄 Ritento la connessione tra 5 secondi...")
+        print("🔄 Retrying connection in 5 seconds...")
         await asyncio.sleep(5)
 
 async def main():
-    print("Avvio Smart Health Cloud")
+    print("Starting Smart Health Cloud")
     
     tasks = []
     for sensor_name, config in SENSORS_CONFIG.items():
@@ -125,7 +125,7 @@ async def main():
     try:
         await asyncio.gather(*tasks)
     except (KeyboardInterrupt, asyncio.CancelledError):
-        print("\n🛑 Chiusura dei servizi CoAP...")
+        print("\n🛑 Shutting down CoAP services...")
         for t in tasks:
             t.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)
@@ -137,4 +137,4 @@ if __name__ == '__main__':
         pass
     finally:
         db.close()
-        print("Uscita completata.")
+        print("Exit completed.")
