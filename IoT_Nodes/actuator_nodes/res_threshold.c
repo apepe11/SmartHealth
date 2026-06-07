@@ -44,7 +44,7 @@ static void threshold_put_handler(coap_message_t *request, coap_message_t *respo
                sscanf(temp, "{\"threshold\": %d}", &new_threshold) == 1) {
                 
                 if(new_threshold >= 0 && new_threshold <= 2) {
-                    printf("[Server CoAP] Cambio soglia da Cloud: %d -> %d\n", alarm_threshold, new_threshold);
+                    printf("Cambio soglia da Cloud: %d -> %d\n", alarm_threshold, new_threshold);
                     alarm_threshold = new_threshold;
                     
                     update_leds_by_threshold(current_risk);
@@ -61,5 +61,5 @@ static void threshold_put_handler(coap_message_t *request, coap_message_t *respo
 void threshold_resource_init(void)
 {
     coap_activate_resource(&res_threshold, "threshold");
-    printf("[Server CoAP] Risorsa /threshold attivata con successo.\n");
+    printf("Risorsa /threshold attivata con successo.\n");
 }

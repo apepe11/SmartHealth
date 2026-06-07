@@ -24,7 +24,7 @@ class CoAPNetworkService:
                 request.opt.content_format = 50 
                 
                 response = await context.request(request).response
-                print(f" PUT eseguita con successo su [{ip}]/{resource}. Risposta nodo: {response.code}")
+                print(f" PUT eseguita con successo. Risposta nodo: {response.code}")
             except Exception as e:
                 print(f" Impossibile inviare PUT a [{ip}]/{resource}: {e}")
         
@@ -34,7 +34,6 @@ class CoAPNetworkService:
         payload = {"new_sr": int(new_rate)}
         print(f" Invio nuovo sampling rate ({new_rate}s) a {sensor_ip}...")
         
-        # cerco l'ID corrispondente all'IP per aggiornare il local storage del timeout
         for s_name, cfg in SENSORS_CONFIG.items():
             if cfg["sensor_ip"] == sensor_ip:
                 db_shared.update_sampling_rate(cfg["id"], int(new_rate))

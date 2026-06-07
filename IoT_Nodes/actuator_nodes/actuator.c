@@ -1,5 +1,3 @@
-// actuator.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,8 +26,8 @@ static coap_observee_t *vitals_observation = NULL;
 PROCESS(actuator_node, "Smart Health Actuator Node");
 AUTOSTART_PROCESSES(&actuator_node);
 
-void update_leds_by_threshold(int risk)
-{
+//funzione per aggiornare lo stato dei LED in base al rischio attuale 
+void update_leds_by_threshold(int risk){
     current_risk = risk;
     leds_off(LEDS_ALL);
     
@@ -47,11 +45,8 @@ void update_leds_by_threshold(int risk)
     }
 }
 
-
-static void vitals_notification_handler(coap_observee_t *obs,
-                                        void *notification,
-                                        coap_notification_flag_t flag)
-{
+// funzione per /threshold
+static void vitals_notification_handler(coap_observee_t *obs,void *notification,coap_notification_flag_t flag){
     const uint8_t *payload;
     int len;
     int hr, temp, spo2, risk;
@@ -76,7 +71,6 @@ static void vitals_notification_handler(coap_observee_t *obs,
             printf("   HR=%d bpm | Temp=%d C | SpO2=%d%% | Rischio=%d\n",
                    hr, temp, spo2, risk);
 
-            // Aggiorna lo stato dei LED
             update_leds_by_threshold(risk);
         } else {
             LOG_WARN("Errore nel parsing del payload ricevuto: %s\n", buffer);
@@ -84,8 +78,7 @@ static void vitals_notification_handler(coap_observee_t *obs,
     }
 }
 
-PROCESS_THREAD(actuator_node, ev, data)
-{
+PROCESS_THREAD(actuator_node, ev, data){
     static struct etimer rpl_timer;
 
     PROCESS_BEGIN();
@@ -120,8 +113,7 @@ PROCESS_THREAD(actuator_node, ev, data)
 
     printf("Avvio CoAP Client \n");
     
-    vitals_observation = coap_obs_request_registration(&sensor_ep, "vitals", 
-                                                       vitals_notification_handler, NULL);
+    vitals_observation = coap_obs_request_registration(&sensor_ep, "vitals", vitals_notification_handler, NULL);
 
     if(vitals_observation == NULL) {
         printf("ERRORE: impossibile osservare il sensore!\n");
