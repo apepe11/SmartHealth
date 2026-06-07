@@ -54,14 +54,14 @@ class SmartHealthApp:
         self.status_bar.pack(side="bottom", pady=10)
         
         self.refresh_data()
-
+    # callback per cambio sampling rate da GUI
     def handle_change_sampling_rate(self, new_rate):
         sensor_ip = SENSORS_CONFIG["Sensori"]["sensor_ip"]
         sensor_id = SENSORS_CONFIG["Sensori"]["id"]
         
         self.data_service.update_sampling_rate(sensor_id, new_rate)
         self.coap_net_service.send_new_sampling_rate(sensor_ip, new_rate)
-
+    # funzione per aggiornare i dati visualizzati nelle card, chiamata periodicamente
     def refresh_data(self):
         latest_records = self.data_service.fetch_latest_measurements() 
         sensor_map = {1: "Sensori"}

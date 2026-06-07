@@ -16,7 +16,7 @@ db = DBManager(
 )
 
 last_sent_threshold = None
-
+# funzione per inviare la PUT all'attuatore con il nuovo threshold
 async def send_threshold_to_actuator(new_threshold, sensor_name="Sensori"):
     try:
         actuator_ip = SENSORS_CONFIG[sensor_name]["actuator_ip"]
@@ -35,7 +35,7 @@ async def send_threshold_to_actuator(new_threshold, sensor_name="Sensori"):
     except Exception as e:
         print(f" ❌ Errore durante l'invio della PUT all'attuatore: {e}")
         return None
-
+# funzione per gestire i dati in arrivo dai sensori, aggiornare il DB e decidere se inviare nuovi threshold
 def handle_incoming_data(payload_text, sensor_name):
     global last_sent_threshold
     try:
@@ -87,7 +87,7 @@ def handle_incoming_data(payload_text, sensor_name):
             
     except Exception as e:
         print(f" ❌ Errore nel parsing dei dati da {sensor_name}: {e}")
-
+# funzione per osservare i dati dai sensori CoAP
 async def observe_sensor(sensor_ip, sensor_name):
     while True:
         try:

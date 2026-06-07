@@ -13,7 +13,8 @@ class DataService:
         return db_shared.fetch_latest_measurements()
 
 
-class CoAPNetworkService:  
+class CoAPNetworkService: 
+    # funzione per eseguire la PUT in modo asincrono 
     def _run_async_put(self, ip, resource, payload):
         async def put_task():
             try:
@@ -29,7 +30,7 @@ class CoAPNetworkService:
                 print(f" Impossibile inviare PUT a [{ip}]/{resource}: {e}")
         
         asyncio.run(put_task())
-
+    # funzione per inviare la PUT all'attuatore con il nuovo threshold
     def send_new_sampling_rate(self, sensor_ip, new_rate):
         payload = {"new_sr": int(new_rate)}
         print(f" Invio nuovo sampling rate ({new_rate}s) a {sensor_ip}...")
